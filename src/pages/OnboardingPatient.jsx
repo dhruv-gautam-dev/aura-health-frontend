@@ -107,6 +107,7 @@ export default function OnboardingPatient() {
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        console.log(formData);
         try {
             await api?.auth?.updateMe({
                 ...formData,
