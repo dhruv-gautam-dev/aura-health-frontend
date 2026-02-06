@@ -12,6 +12,7 @@ import OnboardingPatient from './pages/OnboardingPatient';
 // import ImageDiagnosis from './pages/ImageDiagnosis';
 import __Layout from './Layout';
 import { ReactNode } from 'react';
+import LandingPage from './pages/LandingPage';
 
 
 export const PAGES: Record<string, React.ComponentType> = {
@@ -22,6 +23,7 @@ export const PAGES: Record<string, React.ComponentType> = {
   // "Reports": Reports,
   // "Profile": Profile,
   "OnboardingPatient": OnboardingPatient,
+  "LandingPage":LandingPage,
   // "OnboardingDoctor": OnboardingDoctor,
   // "FindDoctor": FindDoctor,
   // "MedicalRecords": MedicalRecords,
@@ -36,7 +38,7 @@ interface PagesConfig {
 }
 
 export const pagesConfig: PagesConfig = {
-  mainPage: "Home",
+  mainPage: "LandingPage",
   Pages: PAGES,
   Layout: __Layout,
 };
