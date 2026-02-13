@@ -13,6 +13,7 @@ import OnboardingPatient from './pages/OnboardingPatient';
 import __Layout from './Layout';
 import { ReactNode } from 'react';
 import LandingPage from './pages/LandingPage';
+import RoleSelectionPage from './pages/RoleSelectionPage';
 
 
 export const PAGES: Record<string, React.ComponentType> = {
@@ -22,6 +23,7 @@ export const PAGES: Record<string, React.ComponentType> = {
   // "Medications": Medications,
   // "Reports": Reports,
   // "Profile": Profile,
+  "RoleSelectionPage":RoleSelectionPage,
   "OnboardingPatient": OnboardingPatient,
   "LandingPage":LandingPage,
   // "OnboardingDoctor": OnboardingDoctor,

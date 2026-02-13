@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   Brain,
@@ -32,6 +33,7 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background font-sans overflow-x-hidden">
       {/* Navigation */}
@@ -61,6 +63,7 @@ export default function LandingPage() {
               Sign In
             </button>
             <button
+              onClick={() => navigate("/RoleSelectionPage")}
               className="
 inline-flex items-center gap-2
 rounded-full
