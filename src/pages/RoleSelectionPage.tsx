@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { User, Stethoscope, ChevronRight, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from ".././components/ui/card";
 import { Button } from ".././components/ui/button";
 
@@ -20,6 +20,7 @@ const itemVariants = {
 };
 
 export default function RoleSelectionPage() {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Background blobs */}
@@ -56,6 +57,7 @@ export default function RoleSelectionPage() {
             icon={<User className="h-12 w-12" />}
             role="patient"
             color="bg-purple-600"
+            onClick={() => { navigate('/OnboardingPatient') }}
 
           />
           <RoleCard
@@ -64,6 +66,7 @@ export default function RoleSelectionPage() {
             icon={<Stethoscope className="h-12 w-12" />}
             role="doctor"
             color="bg-[#13B7A2]"
+            onClick={() => { navigate('/OnboardingPatient') }}
 
           />
         </div>
@@ -72,10 +75,12 @@ export default function RoleSelectionPage() {
   );
 }
 
-function RoleCard({ title, description, icon, role, color }: { title: string, description: string, icon: React.ReactNode, role: string, color: string }) {
+function RoleCard({ title, description, icon, role, color, onClick }: { title: string, description: string, icon: React.ReactNode, role: string, color: string, onClick?: () => void }) {
   return (
     <motion.div variants={itemVariants}>
-      <Card className="relative overflow-hidden group cursor-pointer border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
+      <Card
+       
+        className="relative overflow-hidden group cursor-pointer border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10">
         <CardContent className="p-10 flex flex-col items-center text-center">
           <div className={`w-24 h-24 rounded-3xl ${color} text-white flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
             {icon}
@@ -84,7 +89,13 @@ function RoleCard({ title, description, icon, role, color }: { title: string, de
           <p className="text-muted-foreground mb-8 leading-relaxed">
             {description}
           </p>
-          <Button className={`w-full h-14 rounded-full ${color} hover:opacity-90 text-white gap-2 font-bold`}>
+          <Button
+          //  onClick={onClick}
+           onClick={() => {
+    console.log("button clicked");
+    onClick?.();
+  }}
+            className={`w-full h-14 rounded-full ${color} hover:opacity-90 text-white gap-2 font-bold`}>
             Continue as {role === 'patient' ? 'Patient' : 'Doctor'}
             <ChevronRight className="h-5 w-5" />
           </Button>
