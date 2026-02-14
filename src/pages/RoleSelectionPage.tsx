@@ -57,7 +57,9 @@ export default function RoleSelectionPage() {
             icon={<User className="h-12 w-12" />}
             role="patient"
             color="bg-purple-600"
-            onClick={() => { navigate('/OnboardingPatient') }}
+            // onClick={() => { navigate('/OnboardingPatient') }}
+            onClick={() => navigate(`/signup?role=patient`)}
+
 
           />
           <RoleCard
@@ -66,7 +68,9 @@ export default function RoleSelectionPage() {
             icon={<Stethoscope className="h-12 w-12" />}
             role="doctor"
             color="bg-[#13B7A2]"
-            onClick={() => { navigate('/OnboardingPatient') }}
+            // onClick={() => { navigate('/OnboardingPatient') }}
+            onClick={() => navigate(`/signup?role=doctor`)}
+
 
           />
         </div>

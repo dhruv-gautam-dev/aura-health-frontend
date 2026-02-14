@@ -1,9 +1,10 @@
+import axios, { InternalAxiosRequestConfig } from "axios";
+import { auth } from "../firebase";
 import { appParams } from "../lib/app-params";
-import axios from "axios";
 
-const { appId, token, functionsVersion, appBaseUrl } = appParams;
+const { appId, functionsVersion, appBaseUrl } = appParams;
 
-// Axios instance = your "client"
+// Create Axios instance
 export const api = axios.create({
   baseURL: appBaseUrl ?? undefined,
   headers: {
@@ -11,25 +12,26 @@ export const api = axios.create({
   },
 });
 
-// Optional: attach auth token automatically
+// Attach Firebase ID token automatically
 api.interceptors.request.use(
-  (config) => {
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config: InternalAxiosRequestConfig) => {
+    const user = auth.currentUser;
+
+    if (user) {
+      const idToken = await user.getIdToken();
+      config.headers.Authorization = `Bearer ${idToken}`;
     }
 
-    // optional metadata headers
-    if (appId) config.headers["x-app-id"] = appId;
-    if (functionsVersion)
+    // Optional metadata headers
+    if (appId) {
+      config.headers["x-app-id"] = appId;
+    }
+
+    if (functionsVersion) {
       config.headers["x-functions-version"] = functionsVersion;
+    }
 
     return config;
   },
   (error) => Promise.reject(error)
 );
-
-
-// base44.get("/users");
-// base44.post("/login", data);
-// base44.put("/profile", payload);
-// base44.delete("/logout");

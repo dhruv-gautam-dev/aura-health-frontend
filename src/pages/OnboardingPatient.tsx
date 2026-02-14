@@ -149,23 +149,24 @@ export default function OnboardingPatient() {
     };
 
     const handleSubmit = async () => {
-        setIsSubmitting(true);
-        console.log(formData);
-        try {
-            // @ts-expect-error - api structure is dynamic
-            await api?.auth?.updateMe({
-                ...formData,
-                user_type: 'patient',
-                onboarding_completed: true,
-            });
-            toast.success('Profile completed successfully!');
-            navigate(createPageUrl('Home'));
-        } catch (error) {
-            toast.error('Failed to save profile');
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    setIsSubmitting(true);
+
+    try {
+        await api.post("/auth/update-me", {
+            ...formData,
+            user_type: "patient",
+            onboarding_completed: true,
+        });
+
+        toast.success("Profile completed successfully!");
+        navigate(createPageUrl("Home"));
+    } catch (error) {
+        toast.error("Failed to save profile");
+    } finally {
+        setIsSubmitting(false);
+    }
+};
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
@@ -190,15 +191,13 @@ export default function OnboardingPatient() {
                                         scale: currentStep === step.id ? 1.1 : 1,
                                         backgroundColor: currentStep >= step.id ? '#0E7490' : '#E2E8F0',
                                     }}
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${
-                                        currentStep >= step.id ? 'text-white' : 'text-slate-400'
-                                    }`}
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${currentStep >= step.id ? 'text-white' : 'text-slate-400'
+                                        }`}
                                 >
                                     <step.icon className="w-6 h-6" />
                                 </motion.div>
-                                <p className={`text-xs font-medium ${
-                                    currentStep >= step.id ? 'text-cyan-700' : 'text-slate-400'
-                                }`}>
+                                <p className={`text-xs font-medium ${currentStep >= step.id ? 'text-cyan-700' : 'text-slate-400'
+                                    }`}>
                                     Step {step.id}
                                 </p>
                             </div>
@@ -227,7 +226,7 @@ export default function OnboardingPatient() {
                                 className="space-y-6"
                             >
                                 <h2 className="text-2xl font-semibold text-slate-800 mb-6">Personal Information</h2>
-                                
+
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <Label>Date of Birth</Label>
