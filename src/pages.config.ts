@@ -15,6 +15,7 @@ import { ReactNode } from 'react';
 import LandingPage from './pages/LandingPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import Signup from './pages/Signup';
+import login from './pages/login';
 
 
 export const PAGES: Record<string, React.ComponentType> = {
@@ -27,7 +28,8 @@ export const PAGES: Record<string, React.ComponentType> = {
   "RoleSelectionPage":RoleSelectionPage,
   "OnboardingPatient": OnboardingPatient,
   "LandingPage":LandingPage,
-  "Signup":Signup
+  "Signup":Signup,
+  "login":login
   // "OnboardingDoctor": OnboardingDoctor,
   // "FindDoctor": FindDoctor,
   // "MedicalRecords": MedicalRecords,
