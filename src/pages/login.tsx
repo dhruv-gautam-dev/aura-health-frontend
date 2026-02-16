@@ -230,7 +230,7 @@ export default function Login() {
                 <p className="text-center text-lg text-gray-500 pt-4">
                   New to Aura?{" "}
                   <Link
-                    to="/get-started"
+                    to="/RoleSelectionPage"
                     className="text-[#13B7A2] font-bold hover:underline"
                   >
                     Join Today

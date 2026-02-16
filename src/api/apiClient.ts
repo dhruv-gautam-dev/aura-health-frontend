@@ -35,3 +35,33 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+// Authentication Endpoints
+export const authenticateUser = async (firebaseUser: any) => {
+  const token = await firebaseUser.getIdToken();
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+
+  try {
+    // 1. Try Login first
+    let response = await api.post("/auth/login", null, { headers });
+
+    // 2. If 404 → User not found → Call Signup
+    if (response.status === 404) {
+      console.log("User not found in DB. Creating new account...");
+      response = await api.post("/auth/signup", null, { headers });
+    }
+
+    // 3. Handle final response
+    if (response.status === 200 || response.status === 201) {
+      return response.data; // Proceed to Dashboard
+    } else {
+      throw new Error(response.data.detail);
+    }
+  } catch (error: any) {
+    throw new Error(error.response?.data?.detail || "Authentication failed");
+  }
+};
