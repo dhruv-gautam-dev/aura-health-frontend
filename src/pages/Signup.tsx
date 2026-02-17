@@ -19,8 +19,13 @@ import { Input } from "../components/ui/input";
 import { useToast } from "../components/ui/use-toast";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { api } from "../api/apiClient";
 
 const signupSchema = z.object({
+  userName: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username cannot exceed 20 characters"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
@@ -39,21 +44,53 @@ export default function SignupPage() {
     defaultValues: {
       email: "",
       password: "",
+      userName: "",
     },
   });
 
-  // const onSubmit = (data: z.infer<typeof signupSchema>) => {
-  //   // In mockup mode, we simulate a successful signup
-  //   console.log("Signup data:", data);
-  //   toast({
-  //     title: "Account created!",
-  //     description: "Welcome to Aura Health. Redirecting to dashboard...",
-  //   });
 
-  //   // Simulate redirection after a brief delay
-  //   setTimeout(() => {
-  //     setLocation("/");
-  //   }, 1500);
+
+  // const onSubmit = async (data: z.infer<typeof signupSchema>) => {
+  //   if (!role || !["patient", "doctor"].includes(role)) {
+  //     toast({
+  //       title: "Invalid signup request",
+  //       description: "Account type is missing or invalid.",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     const userCredential = await createUserWithEmailAndPassword(
+  //       auth,
+  //       data.email,
+  //       data.password
+  //     );
+
+  //     if (!userCredential.user) {
+  //       throw new Error("User creation failed.");
+  //     }
+
+  //     // Navigate based on role
+  //     const redirectPath =
+  //       role === "patient"
+  //         ? "/OnboardingPatient"
+  //         : "/OnboardingPatient";
+
+  //     navigate(redirectPath);
+
+  //   } catch (error: any) {
+  //     console.error("Signup error:", error);
+
+  //     toast({
+  //       title: "Signup failed",
+  //       description:
+  //         error?.code === "auth/email-already-in-use"
+  //           ? "This email is already registered."
+  //           : error?.message || "Something went wrong.",
+  //       variant: "destructive",
+  //     });
+  //   }
   // };
 
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
@@ -67,6 +104,7 @@ export default function SignupPage() {
     }
 
     try {
+      // 1️⃣ Create user in Firebase
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
@@ -77,11 +115,32 @@ export default function SignupPage() {
         throw new Error("User creation failed.");
       }
 
-      // Navigate based on role
+      const firebaseUser = userCredential.user;
+
+      // 2️⃣ Get Firebase ID token
+      const idToken = await firebaseUser.getIdToken();
+
+      // 3️⃣ Call your backend signup API
+
+      const response = await api.post("/auth/signup", {
+        email: data.email,
+        role: role,
+        userName: data.userName,
+      }, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      });
+
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error("Backend signup failed");
+      }
+
+      // 4️⃣ Navigate only after backend success
       const redirectPath =
         role === "patient"
           ? "/OnboardingPatient"
-          : "/OnboardingPatient";
+          : "/OnboardingDoctor";
 
       navigate(redirectPath);
 
@@ -98,7 +157,6 @@ export default function SignupPage() {
       });
     }
   };
-
 
   return (
     <div className="min-h-screen bg-background flex grid lg:grid-cols-2">
@@ -147,6 +205,27 @@ export default function SignupPage() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+              <FormField
+                control={form.control}
+                name="userName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="john_doe"
+                        className="h-12"
+                        {...field}
+                        data-testid="input-username"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+
               <FormField
                 control={form.control}
                 name="email"
