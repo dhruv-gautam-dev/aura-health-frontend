@@ -141,9 +141,9 @@ export default function SignupPage() {
       }
 
       await authApi.signupWithFirebase(firebaseUser, {
-        email: data.email,
-        role,
-        userName: data.userName,
+        // email: data.email,
+        // role,
+        // userName: data.userName,
       });
 
       navigate(

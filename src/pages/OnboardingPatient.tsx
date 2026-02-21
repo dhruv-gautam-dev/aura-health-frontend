@@ -10,6 +10,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
 import { authApi } from '../api';
+import { patientApi } from '../api/patient.api';
 
 interface Step {
     id: number;
@@ -149,23 +150,29 @@ export default function OnboardingPatient() {
     };
 
     const handleSubmit = async () => {
-    setIsSubmitting(true);
+        setIsSubmitting(true);
 
-    try {
-        await authApi.updateMe({
-            ...formData,
-            user_type: "patient",
-            onboarding_completed: true,
-        });
+        try {
+            // await authApi.updateMe({
+            //     ...formData,
+            //     user_type: "patient",
+            //     onboarding_completed: true,
+            // });
 
-        toast.success("Profile completed successfully!");
-        navigate(createPageUrl("Home"));
-    } catch (error) {
-        toast.error("Failed to save profile");
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+            await patientApi.createProfile({
+                ...formData,
+                // user_type: "patient",
+                onboarding_completed: true,
+            });
+
+            toast.success("Profile completed successfully!");
+            navigate(createPageUrl("Home"));
+        } catch (error) {
+            toast.error("Failed to save profile");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
 
     return (
