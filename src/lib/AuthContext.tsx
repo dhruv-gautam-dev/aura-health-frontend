@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { api } from '../api/apiClient';
+import { authApi } from '../api/auth.api';
+import { http } from '../api/http';
 import { appParams } from './app-params';
 
 interface User {
@@ -54,11 +55,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setIsLoadingPublicSettings(true);
       setAuthError(null);
-      
+
       try {
-        const publicSettings = await api.get(`/prod/public-settings/by-id/${appParams.appId}`);
+        const { data: publicSettings } = await http.get(
+          `/prod/public-settings/by-id/${appParams.appId}`
+        );
+
         setAppPublicSettings(publicSettings.data);
-        
+
         // If we got the app public settings successfully, check if user is authenticated
         if (appParams.token) {
           await checkUserAuth();
@@ -69,9 +73,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoadingPublicSettings(false);
       } catch (appError) {
         console.error('App state check failed:', appError);
-        
+
         const error = appError as { status?: number; data?: { extra_data?: { reason?: string } }; message?: string };
-        
+
         // Handle app-level errors
         if (error.status === 403 && error.data?.extra_data?.reason) {
           const reason = error.data.extra_data.reason;
@@ -116,8 +120,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
-      // @ts-expect-error - api structure is dynamic
-      const currentUser = await api.auth?.me();
+      const currentUser = await authApi.me();
       setUser(currentUser);
       setIsAuthenticated(true);
       setIsLoadingAuth(false);
@@ -125,7 +128,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
-      
+
       const err = error as { status?: number };
       // If user auth fails, it might be an expired token
       if (err.status === 401 || err.status === 403) {
@@ -138,30 +141,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = (shouldRedirect = true) => {
+    localStorage.removeItem("accessToken"); // or wherever you store it
     setUser(null);
     setIsAuthenticated(false);
-    
+
     if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      // @ts-expect-error - api structure is dynamic
-      api.auth?.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      // @ts-expect-error - api structure is dynamic
-      api.auth?.logout();
+      window.location.href = "/login";
     }
   };
 
   const navigateToLogin = () => {
-    // Use the SDK's redirectToLogin method
-    // @ts-expect-error - api structure is dynamic
-    api.auth?.redirectToLogin(window.location.href);
+    
+    window.location.href = "/login";
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
       isLoadingAuth,
       isLoadingPublicSettings,
       authError,

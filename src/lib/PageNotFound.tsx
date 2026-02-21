@@ -1,7 +1,7 @@
 import { useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { JSX } from 'react';
-import { api } from '../api/apiClient';
+import { authApi } from '../api';
 
 // --------------------
 // Types (local, minimal)
@@ -28,8 +28,8 @@ export default function PageNotFound(): JSX.Element {
     queryKey: ['user'],
     queryFn: async (): Promise<AuthQueryResult> => {
       try {
-        // @ts-expect-error - api structure is dynamic
-        const user = await api.auth?.me();
+        // @ t s-expect-error - api structure is dynamic
+        const user = await authApi.me();
         return { user, isAuthenticated: true };
       } catch {
         return { user: null, isAuthenticated: false };

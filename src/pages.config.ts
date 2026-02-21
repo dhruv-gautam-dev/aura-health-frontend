@@ -5,7 +5,6 @@ import Home from './pages/Home';
 // import Reports from './pages/Reports';
 // import Profile from './pages/Profile';
 import OnboardingPatient from './pages/OnboardingPatient';
-// import OnboardingDoctor from './pages/OnboardingDoctor';
 // import FindDoctor from './pages/FindDoctor';
 // import MedicalRecords from './pages/MedicalRecords';
 // import FindAmbulance from './pages/FindAmbulance';
@@ -16,11 +15,13 @@ import LandingPage from './pages/LandingPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import Signup from './pages/Signup';
 import login from './pages/login';
+import { OnboardingDoctor } from './pages/OnboardingDoctor';
+import Chat from './pages/Chat';
 
 
 export const PAGES: Record<string, React.ComponentType> = {
   "Home": Home,
-  // "Chat": Chat,
+  "Chat": Chat,
   // "ScanPrescription": ScanPrescription,
   // "Medications": Medications,
   // "Reports": Reports,
@@ -29,8 +30,8 @@ export const PAGES: Record<string, React.ComponentType> = {
   "OnboardingPatient": OnboardingPatient,
   "LandingPage":LandingPage,
   "Signup":Signup,
-  "login":login
-  // "OnboardingDoctor": OnboardingDoctor,
+  "login":login,
+  "OnboardingDoctor": OnboardingDoctor,
   // "FindDoctor": FindDoctor,
   // "MedicalRecords": MedicalRecords,
   // "FindAmbulance": FindAmbulance,

@@ -9,7 +9,7 @@ import { createPageUrl } from '../utils';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Input } from '../components/ui/input';
-import { api } from '../api/apiClient';
+import { authApi } from '../api';
 
 interface Step {
     id: number;
@@ -152,7 +152,7 @@ export default function OnboardingPatient() {
     setIsSubmitting(true);
 
     try {
-        await api.post("/auth/update-me", {
+        await authApi.updateMe({
             ...formData,
             user_type: "patient",
             onboarding_completed: true,

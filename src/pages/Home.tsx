@@ -5,13 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus, Bell, Calendar, ChevronRight, Sparkles } from 'lucide-react';
 import moment from 'moment';
 
-import { api } from '../api/apiClient';
+import { authApi } from '../api/auth.api';
 import { createPageUrl } from '../utils';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import QuickInput from '../components/home/QuickInput';
 import MedicationCard from '../components/home/MedicationCard';
 import HealthReportCard from '../components/home/HealthReportCard';
+import { medicationApi } from '../api/medication.api';
+import { healthReportApi } from '../api/healthReport.api';
 
 interface User {
     full_name?: string;
@@ -46,21 +48,22 @@ export default function Home() {
         else if (hour < 18) setGreeting('Good afternoon');
         else setGreeting('Good evening');
 
-        // @ts-expect-error - api structure is dynamic
-        api?.auth?.me().then(setUser).catch(() => {});
+        
+        authApi.me()
+  .then(setUser)
+  .catch(() => {});
     }, []);
 
     const { data: medications, isLoading: medsLoading } = useQuery<Medication[]>({
         queryKey: ['medications'],
-        // @ts-expect-error - api structure is dynamic
-        queryFn: () => api?.entities?.Medication.filter({ is_active: true }, '-created_date', 10),
+        queryFn: medicationApi.getActive,
         initialData: [],
     });
 
     const { data: reports, isLoading: reportsLoading } = useQuery<HealthReport[]>({
         queryKey: ['reports'],
-        // @ts-expect-error - api structure is dynamic
-        queryFn: () => api?.entities?.HealthReport.list('-created_date', 5),
+        
+        queryFn: healthReportApi.getRecent,
         initialData: [],
     });
 

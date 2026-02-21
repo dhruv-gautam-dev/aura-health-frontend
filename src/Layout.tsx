@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { createPageUrl } from './utils/index';
 import { Button } from './components/ui/button';
-import { api } from './api/apiClient';
+import { authApi } from './api';
 
 interface NavItem {
     name: string;
@@ -52,16 +52,18 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     useEffect(() => {
-        // @ts-expect-error - api structure is dynamic
-        api?.auth?.me().then(setUser).catch(() => {});
+        
+        // api?.auth?.me().then(setUser).catch(() => {});
+        authApi.me()
     }, []);
 
     const showNav = currentPageName ? pagesWithNav.includes(currentPageName) : false;
     const navItems = user?.user_type === 'doctor' ? doctorNavItems : patientNavItems;
 
     const handleLogout = () => {
-        // @ts-expect-error - api structure is dynamic
-        api?.auth?.logout();
+        
+        // api?.auth?.logout();
+        authApi.logout();
     };
 
     return (

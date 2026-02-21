@@ -5,7 +5,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Activity, Mail, Lock, ArrowRight, Github } from "lucide-react";
+import { Activity, Mail, Lock, ArrowRight, Github, User } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
   Form,
@@ -19,7 +19,7 @@ import { Input } from "../components/ui/input";
 import { useToast } from "../components/ui/use-toast";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { api } from "../api/apiClient";
+import { authApi } from "../api";
 
 const signupSchema = z.object({
   userName: z
@@ -50,6 +50,7 @@ export default function SignupPage() {
 
 
 
+
   // const onSubmit = async (data: z.infer<typeof signupSchema>) => {
   //   if (!role || !["patient", "doctor"].includes(role)) {
   //     toast({
@@ -61,6 +62,7 @@ export default function SignupPage() {
   //   }
 
   //   try {
+  //     // 1️⃣ Create user in Firebase
   //     const userCredential = await createUserWithEmailAndPassword(
   //       auth,
   //       data.email,
@@ -71,11 +73,32 @@ export default function SignupPage() {
   //       throw new Error("User creation failed.");
   //     }
 
-  //     // Navigate based on role
+  //     const firebaseUser = userCredential.user;
+
+  //     // 2️⃣ Get Firebase ID token
+  //     const idToken = await firebaseUser.getIdToken();
+
+  //     // 3️⃣ Call your backend signup API
+
+  //     const response = await api.post("/auth/signup", {
+  //       email: data.email,
+  //       role: role,
+  //       userName: data.userName,
+  //     }, {
+  //       headers: {
+  //         Authorization: `Bearer ${idToken}`,
+  //       },
+  //     });
+
+  //     if (response.status < 200 || response.status >= 300) {
+  //       throw new Error("Backend signup failed");
+  //     }
+
+  //     // 4️⃣ Navigate only after backend success
   //     const redirectPath =
   //       role === "patient"
   //         ? "/OnboardingPatient"
-  //         : "/OnboardingPatient";
+  //         : "/OnboardingDoctor";
 
   //     navigate(redirectPath);
 
@@ -93,6 +116,7 @@ export default function SignupPage() {
   //   }
   // };
 
+
   const onSubmit = async (data: z.infer<typeof signupSchema>) => {
     if (!role || !["patient", "doctor"].includes(role)) {
       toast({
@@ -104,49 +128,31 @@ export default function SignupPage() {
     }
 
     try {
-      // 1️⃣ Create user in Firebase
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         data.email,
         data.password
       );
 
-      if (!userCredential.user) {
+      const firebaseUser = userCredential.user;
+
+      if (!firebaseUser) {
         throw new Error("User creation failed.");
       }
 
-      const firebaseUser = userCredential.user;
-
-      // 2️⃣ Get Firebase ID token
-      const idToken = await firebaseUser.getIdToken();
-
-      // 3️⃣ Call your backend signup API
-
-      const response = await api.post("/auth/signup", {
+      await authApi.signupWithFirebase(firebaseUser, {
         email: data.email,
-        role: role,
+        role,
         userName: data.userName,
-      }, {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
       });
 
-      if (response.status < 200 || response.status >= 300) {
-        throw new Error("Backend signup failed");
-      }
-
-      // 4️⃣ Navigate only after backend success
-      const redirectPath =
+      navigate(
         role === "patient"
           ? "/OnboardingPatient"
-          : "/OnboardingDoctor";
-
-      navigate(redirectPath);
+          : "/OnboardingDoctor"
+      );
 
     } catch (error: any) {
-      console.error("Signup error:", error);
-
       toast({
         title: "Signup failed",
         description:
@@ -157,6 +163,7 @@ export default function SignupPage() {
       });
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background flex grid lg:grid-cols-2">
@@ -213,12 +220,15 @@ export default function SignupPage() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="john_doe"
-                        className="h-12"
-                        {...field}
-                        data-testid="input-username"
-                      />
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="john_doe"
+                          className="pl-10 h-12"
+                          {...field}
+                          data-testid="input-username"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
