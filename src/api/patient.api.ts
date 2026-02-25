@@ -38,7 +38,7 @@ export interface PatientProfilePayload {
 
 export const patientApi = {
     createProfile: async (payload: PatientProfilePayload) => {
-        const { data } = await http.post("/patient-profile", payload);
+        const { data } = await http.post("/users/patient-profile", payload);
         return data;
     },
 };

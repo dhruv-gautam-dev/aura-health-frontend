@@ -168,15 +168,15 @@ export const OnboardingDoctor: React.FC = () => {
 
         try {
 
-            const user = await authApi.me();
+            // const user = await authApi.me();
 
-            await authApi.updateMe({
-                user_type: "doctor",
-                onboarding_completed: true,
-            });
+            // await authApi.updateMe({
+            //     user_type: "doctor",
+            //     onboarding_completed: true,
+            // });
 
-            await doctorApi.createProfile({
-                user_id: user.id,
+            await doctorApi.createProfile({ 
+                // user_id: user.id,
                 specialization: formData.specialization,
                 license_number: formData.license_number,
                 years_of_experience: Number(formData.years_of_experience),
@@ -201,6 +201,7 @@ export const OnboardingDoctor: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
 
     const daysOfWeek: string[] = [
         "Monday",

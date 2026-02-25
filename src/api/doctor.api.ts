@@ -3,7 +3,7 @@
 import { http } from "./http";
 
 export interface DoctorProfilePayload {
-  user_id: string;
+  // user_id: string;
   specialization: string;
   license_number: string;
   years_of_experience: number;
@@ -24,7 +24,7 @@ export interface DoctorProfilePayload {
 
 export const doctorApi = {
   createProfile: async (payload: DoctorProfilePayload) => {
-    const { data } = await http.post("/doctor-profile", payload);
+    const { data } = await http.post("/users/doctor-profile", payload);
     return data;
   },
 };
