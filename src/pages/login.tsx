@@ -23,6 +23,9 @@ import {
 import { Input } from "../components/ui/input";
 import { useToast } from "../components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
+import { authApi } from "../api";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -41,15 +44,52 @@ export default function Login() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof loginSchema>) => {
-    console.log("Login data:", data);
-    toast({
-      title: "Welcome back!",
-      description: "Successfully logged into your Aura Health account.",
-    });
-    setTimeout(() => navigate("/"), 1000);
-  };
+  // const onSubmit = (data: z.infer<typeof loginSchema>) => {
+  //   console.log("Login data:", data);
+  //   toast({
+  //     title: "Welcome back!",
+  //     description: "Successfully logged into your Aura Health account.",
+  //   });
+  //   setTimeout(() => navigate("/"), 1000);
+  // };
 
+
+
+
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
+    try {
+      // 1️⃣ Login with Firebase
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+
+      const firebaseUser = userCredential.user;
+
+      // 2️⃣ Send Firebase token to backend
+      const response = await authApi.authenticateUser(firebaseUser);
+
+      // 3️⃣ Store backend response if needed (token/user)
+      console.log("Backend auth response:", response);
+
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Aura Health.",
+      });
+
+      navigate("/Home");
+    } catch (error: any) {
+      console.error(error);
+
+      toast({
+        title: "Login failed",
+        description:
+          error.message || "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center overflow-hidden">
       <div className="flex w-full h-screen overflow-hidden">
