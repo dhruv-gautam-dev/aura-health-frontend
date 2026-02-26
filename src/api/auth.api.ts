@@ -46,9 +46,8 @@ export const authApi = {
     signupWithFirebase: async (
         firebaseUser: any,
         payload: {
-            // email: string;
-            // role: string;
-            // userName: string;
+            name: string;  
+            role: string;  
         }
     ) => {
         const token = await firebaseUser.getIdToken();
