@@ -5,11 +5,16 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { Toaster } from './components/ui/toaster';
 import { queryClientInstance } from './lib/query-client';
-import { AuthProvider, useAuth } from './lib/AuthContext';
-import UserNotRegisteredError from './components/UserNotRegisteredError';
+import { Navigate } from 'react-router-dom';
 import { pagesConfig } from './pages.config';
 import NavigationTracker from './lib/NavigationTracker';
-
+import { Provider, useSelector } from 'react-redux';
+import store, { RootState } from './store';
+import Login from './pages/Login';
+import RoleSelectionPage from './pages/RoleSelectionPage';
+import OnboardingPatient from './pages/OnboardingPatient';
+import { OnboardingDoctor } from './pages/OnboardingDoctor';
+import SignupPage from './pages/Signup';
 // --------------------
 // Pages config typing (minimal & safe)
 // --------------------
@@ -45,37 +50,18 @@ const LayoutWrapper = ({ children, currentPageName }: LayoutWrapperProps) => {
 // --------------------
 // Authenticated App
 // --------------------
-
 const AuthenticatedApp = () => {
-  const {
-    isLoadingAuth,
-    isLoadingPublicSettings,
-    authError,
-    navigateToLogin,
-  } = useAuth();
+  const user = useSelector((state: RootState) => state.auth.user);
 
-  // Loading state
-  if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" />
-      </div>
-    );
+  console.log("AuthenticatedApp: User state:", user);
+
+  if (!user) {
+    console.warn("User not authenticated. Redirecting to login page.");
+    return <Navigate to="/login" replace />;
   }
 
-  // Auth errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
+  console.log("User authenticated. Rendering authenticated routes.");
 
-    if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
-    }
-  }
-
-  // App routes
   return (
     <Routes>
       <Route
@@ -90,7 +76,7 @@ const AuthenticatedApp = () => {
       {Object.entries(Pages).map(([path, Page]) => (
         <Route
           key={path}
-          path={`/${path}`}
+          path={path}
           element={
             <LayoutWrapper currentPageName={path}>
               <Page />
@@ -110,15 +96,27 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-    <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <NavigationTracker />
-          <AuthenticatedApp />
+          <Routes>
+              
+              {/* PUBLIC ROUTE */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/RoleSelectionPage" element={<RoleSelectionPage />} />
+              <Route path="/OnboardingPatient" element={<OnboardingPatient />} />
+              <Route path="/OnboardingDoctor" element={<OnboardingDoctor />} />
+              <Route path="/signup" element={<SignupPage />} />
+
+
+
+              {/* PROTECTED ROUTES */}
+              <Route path="/*" element={<AuthenticatedApp />} />
+
+            </Routes>
         </Router>
         <Toaster />
       </QueryClientProvider>
-    </AuthProvider>
   );
 }
 

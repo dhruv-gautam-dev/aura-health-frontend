@@ -1,12 +1,16 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
 import { appLogsApi } from '../api/appLogs.api';
 import { pagesConfig } from '../pages.config';
+import { useSelector } from "react-redux"
+import { RootState } from '@/store';
 
 export default function NavigationTracker() {
     const location = useLocation();
-    const { isAuthenticated } = useAuth();
+    const isAuthenticated = useSelector(
+        (state: RootState) => state.auth.isAuthenticated
+    ); 
+    
     const { Pages, mainPage } = pagesConfig;
     const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 

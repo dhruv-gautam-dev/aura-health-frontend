@@ -1,5 +1,5 @@
 import React, { useState, useEffect, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
     Home, MessageCircle, FileText, Users, Stethoscope, 
@@ -8,7 +8,9 @@ import {
 import { createPageUrl } from './utils/index';
 import { Button } from './components/ui/button';
 import { authApi } from './api';
-
+import { persistor, RootState } from './store';
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from './store/authSlice';
 interface NavItem {
     name: string;
     icon: LucideIcon;
@@ -18,8 +20,9 @@ interface NavItem {
 interface UserData {
     full_name?: string;
     email?: string;
-    user_type?: string;
+    role?: string;
 }
+
 
 const patientNavItems: NavItem[] = [
     { name: 'Home', icon: Home, page: 'Home' },
@@ -48,23 +51,33 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, currentPageName }: LayoutProps) {
-    const [user, setUser] = useState<UserData | null>(null);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        
-        // api?.auth?.me().then(setUser).catch(() => {});
-        authApi.me()
-    }, []);
+ const user = useSelector((state: RootState) => state.auth.user);
+
 
     const showNav = currentPageName ? pagesWithNav.includes(currentPageName) : false;
-    const navItems = user?.user_type === 'doctor' ? doctorNavItems : patientNavItems;
+    console.log("Current User in Layout:", user);
+    const navItems = user?.role === 'doctor' ? doctorNavItems : patientNavItems;
 
-    const handleLogout = () => {
+    // const handleLogout = () => {
         
-        // api?.auth?.logout();
-        authApi.logout();
-    };
+    //     // api?.auth?.logout();
+    //     authApi.logout();
+    // };
+
+    const handleLogout = async () => {
+  try {
+    await authApi.logout();      
+    dispatch(clearUser());       
+    await persistor.purge();     // 🔥 wipe persisted storage
+    navigate("/login");
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
@@ -89,7 +102,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                             <div>
                                 <h1 className="text-lg font-bold text-slate-800">Aura Health</h1>
                                 <p className="text-xs text-slate-500">
-                                    {user?.user_type === 'doctor' ? 'Doctor Portal' : 'Patient Portal'}
+                                    {user?.role === 'doctor' ? 'Doctor Portal' : 'Patient Portal'}
                                 </p>
                             </div>
                         </div>
