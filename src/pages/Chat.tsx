@@ -9,6 +9,7 @@ import ChatBubble from '../components/chat/ChatBubble';
 import ChatInput from '../components/chat/ChatInput';
 import { chatApi } from '../api';
 import ConnectionStatus from '../components/chat/ConnectionStatus';
+import { sendMessageToAI } from '../api/chat.api';
 
 type Role = 'user' | 'assistant';
 
@@ -20,6 +21,12 @@ interface Message {
     mode: string;
 }
 
+// Add a placeholder function for getFirebaseToken
+async function getFirebaseToken(): Promise<string> {
+    // Replace this with actual Firebase token retrieval logic
+    return 'mock-firebase-token';
+}
+
 export default function Chat(): JSX.Element {
     const navigate = useNavigate();
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +35,7 @@ export default function Chat(): JSX.Element {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [connectionMode, setConnectionMode] = useState<string>('cloud');
     const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+    const [sessionId, setSessionId] = useState<string | null>(null);
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -74,59 +82,27 @@ export default function Chat(): JSX.Element {
         setMessages((prev) => [...prev, userMessage]);
         setIsLoading(true);
 
-        const conversationHistory = messages
-            .map((m) => `${m.role}: ${m.content}`)
-            .join('\n');
+        try {
+            const token = await getFirebaseToken();
+            const response = await sendMessageToAI(content, sessionId, token);
 
-        const prompt = `You are Aura, a friendly and knowledgeable AI medical companion. You help users track their medications, understand health information, and provide supportive guidance.
+            const assistantMessage: Message = {
+                id: Date.now() + 1,
+                role: 'assistant',
+                content: response.reply,
+                mode: connectionMode,
+            };
 
-Guidelines:
-- Be empathetic and supportive
-- Provide clear, helpful health information
-- Always recommend consulting a healthcare professional for medical decisions
-- Use markdown formatting for lists, tables, and emphasis
-- Keep responses concise but thorough
-
-Previous conversation:
-${conversationHistory}
-
-User: ${content}
-
-${attachments.length > 0
-                ? 'The user has attached an image. Describe what you see and provide relevant guidance.'
-                : ''
-            }
-
-Respond helpfully:`;
-
-        const response: string = await chatApi.invokeLLM({
-            prompt,
-            file_urls: attachments.length > 0 ? attachments : undefined,
-        });
-
-        const assistantMessage: Message = {
-            id: Date.now() + 1,
-            role: 'assistant',
-            content: response,
-            mode: connectionMode,
-        };
-
-        setMessages((prev) => [...prev, assistantMessage]);
-
-        await chatApi.createMessage({
-            role: 'user',
-            content,
-            mode: connectionMode,
-            attachments,
-        });
-
-        await chatApi.createMessage({
-            role: 'assistant',
-            content: response,
-            mode: connectionMode,
-        });
-
-        setIsLoading(false);
+            setMessages((prev) => [...prev, assistantMessage]);
+            setSessionId(response.session_id);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            const errorMessage =
+                error instanceof Error ? error.message : 'Failed to send message. Please try again.';
+            alert(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleImageCapture = (file: File): void => {
