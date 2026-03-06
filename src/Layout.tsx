@@ -137,11 +137,11 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                             <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 
                                                 flex items-center justify-center text-white font-semibold">
-                                    {user?.full_name?.[0] || 'U'}
+                                    {user?.username?.[0] || 'U'}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-slate-800 truncate">
-                                        {user?.full_name || 'User'}
+                                        {user?.username || 'User'}
                                     </p>
                                     <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                                 </div>

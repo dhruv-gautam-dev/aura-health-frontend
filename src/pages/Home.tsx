@@ -14,9 +14,11 @@ import MedicationCard from '../components/home/MedicationCard';
 import HealthReportCard from '../components/home/HealthReportCard';
 import { medicationApi } from '../api/medication.api';
 import { healthReportApi } from '../api/healthReport.api';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 interface User {
-    full_name?: string;
+    username?: string;
     email?: string;
 }
 
@@ -39,20 +41,14 @@ interface HealthReport {
 
 export default function Home() {
     const navigate = useNavigate();
-    const [user, setUser] = useState<User | null>(null);
-    const [greeting, setGreeting] = useState('');
+    const user = useSelector((state: RootState)=> state.auth.user)
 
-    useEffect(() => {
+    const greeting = (() => {
         const hour = new Date().getHours();
-        if (hour < 12) setGreeting('Good morning');
-        else if (hour < 18) setGreeting('Good afternoon');
-        else setGreeting('Good evening');
-
-        
-        authApi.me()
-  .then(setUser)
-  .catch(() => {});
-    }, []);
+        if (hour < 12) return 'Good morning';
+        if (hour < 18) return 'Good afternoon';
+        return 'Good evening';
+    })();
 
     const { data: medications, isLoading: medsLoading } = useQuery<Medication[]>({
         queryKey: ['medications'],
@@ -89,7 +85,7 @@ export default function Home() {
         });
     };
 
-    const firstName = user?.full_name?.split(' ')[0] || 'there';
+    const firstName = user?.username?.split(' ')[0] || 'there';
 
     return (
         <div className="min-h-screen">
