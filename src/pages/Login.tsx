@@ -26,6 +26,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { authApi } from "../api";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store/authSlice";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -35,7 +37,7 @@ const loginSchema = z.object({
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
-
+const dispatch = useDispatch();
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -44,14 +46,7 @@ export default function Login() {
     },
   });
 
-  // const onSubmit = (data: z.infer<typeof loginSchema>) => {
-  //   console.log("Login data:", data);
-  //   toast({
-  //     title: "Welcome back!",
-  //     description: "Successfully logged into your Aura Health account.",
-  //   });
-  //   setTimeout(() => navigate("/"), 1000);
-  // };
+
 
 
 
@@ -72,6 +67,8 @@ export default function Login() {
 
       // 3️⃣ Store backend response if needed (token/user)
       console.log("Backend auth response:", response);
+
+      dispatch(setUser(response));
 
       toast({
         title: "Login successful",

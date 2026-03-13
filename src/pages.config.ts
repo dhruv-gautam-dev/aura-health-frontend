@@ -14,7 +14,6 @@ import { ReactNode } from 'react';
 import LandingPage from './pages/LandingPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import Signup from './pages/Signup';
-import login from './pages/login';
 import { OnboardingDoctor } from './pages/OnboardingDoctor';
 import Chat from './pages/Chat';
 
@@ -30,7 +29,6 @@ export const PAGES: Record<string, React.ComponentType> = {
   "OnboardingPatient": OnboardingPatient,
   "LandingPage":LandingPage,
   "Signup":Signup,
-  "login":login,
   "OnboardingDoctor": OnboardingDoctor,
   // "FindDoctor": FindDoctor,
   // "MedicalRecords": MedicalRecords,
