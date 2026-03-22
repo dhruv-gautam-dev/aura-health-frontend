@@ -14,8 +14,11 @@ import MedicationCard from '../components/home/MedicationCard';
 import HealthReportCard from '../components/home/HealthReportCard';
 import { medicationApi } from '../api/medication.api';
 import { healthReportApi } from '../api/healthReport.api';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import { checkLocationPermission } from '@/utils/checkLocationPermission';
+import { startTracking } from '@/services/locationService';
+import { setPermission } from '@/store/locationSlice';
 
 interface User {
     username?: string;
@@ -41,7 +44,47 @@ interface HealthReport {
 
 export default function Home() {
     const navigate = useNavigate();
-    const user = useSelector((state: RootState)=> state.auth.user)
+    const user = useSelector((state: RootState) => state.auth.user)
+    const dispatch = useDispatch();
+    const locationPermission = useSelector((state: RootState) => state.location.permission);
+    useEffect(() => {
+        const initLocation = async () => {
+            const status = await checkLocationPermission(dispatch);
+
+            if (status === "granted") {
+                startTracking(dispatch, sendLocationToServer);
+            }
+        };
+
+        initLocation();
+    }, []);
+
+    const sendLocationToServer = async (location: { latitude: number; longitude: number }) => {
+        try {
+            await fetch("/api/location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify(location),
+            });
+        } catch (error) {
+            console.log("Location send error", error);
+        }
+    };
+
+    const handleEnableLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+        () => {
+            dispatch(setPermission("granted"));
+            startTracking(dispatch, sendLocationToServer);
+        },
+        () => {
+            dispatch(setPermission("denied"));
+        }
+    );
+};
 
     const greeting = (() => {
         const hour = new Date().getHours();
@@ -117,6 +160,29 @@ export default function Home() {
                         <Bell className="w-5 h-5 text-slate-600" />
                     </Button>
                 </header>
+
+                {locationPermission === "prompt" && (
+                    <div className="bg-white border rounded-2xl p-4 mb-4 shadow-sm">
+                        <h3 className="font-semibold text-slate-800">Enable Location</h3>
+                        <p className="text-sm text-slate-500">
+                            Enable location to find nearby doctors, pharmacies, and emergency services.
+                        </p>
+                        <Button
+                            onClick={handleEnableLocation}
+                            className="mt-3 bg-cyan-600 hover:bg-cyan-700"
+                        >
+                            Enable Live Location
+                        </Button>
+                    </div>
+                )}
+
+                {locationPermission === "denied" && (
+                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+                        <p className="text-sm text-red-600">
+                            Location access denied. Please enable it from browser settings.
+                        </p>
+                    </div>
+                )}
 
                 {/* Quick Input */}
                 <motion.section
