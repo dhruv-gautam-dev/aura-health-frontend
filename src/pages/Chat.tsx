@@ -10,6 +10,8 @@ import ChatInput from '../components/chat/ChatInput';
 import { chatApi } from '../api';
 import ConnectionStatus from '../components/chat/ConnectionStatus';
 import { sendMessageToAI } from '../api/chat.api';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 type Role = 'user' | 'assistant';
 
@@ -67,6 +69,9 @@ export default function Chat(): JSX.Element {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    const location = useSelector((state: RootState)=> state.location);
+
+
     const handleSend = async (
         content: string,
         attachments: string[] = []
@@ -84,7 +89,7 @@ export default function Chat(): JSX.Element {
 
         try {
             const token = await getFirebaseToken();
-            const response = await sendMessageToAI(content, sessionId, token);
+            const response = await sendMessageToAI(content, sessionId, token , location );
 
             const assistantMessage: Message = {
                 id: Date.now() + 1,

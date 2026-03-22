@@ -3,6 +3,8 @@
 import { toast } from "sonner";
 import { http } from "./http";
 import axios from 'axios';
+import { RootState } from "@/store";
+import { useSelector } from "react-redux";
 
 const BASE_URL = '/api/v1/chat';
 
@@ -38,12 +40,15 @@ export const chatApi = {
 export async function sendMessageToAI(
   message: string,
   sessionId: string | null,
-  token: string
+  token: string,
+  location: RootState['location']
 ): Promise<{ reply: string; session_id: string }> {
+
+
   try { 
     const response = await http.post(
       `/chat/run`,
-      { message, session_id: sessionId },
+      { message, session_id: sessionId, location: location },
       {
         headers: {
           Authorization: `Bearer ${token}`,

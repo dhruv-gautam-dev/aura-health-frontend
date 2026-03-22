@@ -10,6 +10,7 @@ const initialState: LocationState = {
   address: null,
   permission: "unknown",
   tracking: false,
+  
 };
 
 const locationSlice = createSlice({
