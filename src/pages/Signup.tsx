@@ -7,6 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Activity, Mail, Lock, ArrowRight, Github, User } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useDispatch } from "react-redux";
+import { setUser } from "../store/authSlice";
 import {
   Form,
   FormControl,
@@ -33,6 +35,7 @@ const signupSchema = z.object({
 export default function SignupPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const role = searchParams.get("role");
 
@@ -140,10 +143,14 @@ export default function SignupPage() {
         throw new Error("User creation failed.");
       }
 
-      await authApi.signupWithFirebase(firebaseUser, {
-        name: data.userName, 
-        role: role,          // Pass the role from the URL
+      const backendUser = await authApi.signupWithFirebase(firebaseUser, {
+        name: data.userName,
+        role: role,
       });
+
+      // Set user in Redux immediately so AuthContext's onAuthStateChanged
+      // sees an authenticated user and skips the duplicate backend call.
+      dispatch(setUser(backendUser));
 
       navigate(
         role === "patient"

@@ -69,7 +69,7 @@ export default function Chat(): JSX.Element {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const location = useSelector((state: RootState)=> state.location);
+    const location = useSelector((state: RootState) => state.location);
 
 
     const handleSend = async (
@@ -89,7 +89,7 @@ export default function Chat(): JSX.Element {
 
         try {
             const token = await getFirebaseToken();
-            const response = await sendMessageToAI(content, sessionId, token , location );
+            const response = await sendMessageToAI(content, sessionId, token, location);
 
             const assistantMessage: Message = {
                 id: Date.now() + 1,
@@ -101,10 +101,8 @@ export default function Chat(): JSX.Element {
             setMessages((prev) => [...prev, assistantMessage]);
             setSessionId(response.session_id);
         } catch (error) {
+            // Toast notification already shown by sendMessageToAI — no alert needed.
             console.error('Error sending message:', error);
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to send message. Please try again.';
-            alert(errorMessage);
         } finally {
             setIsLoading(false);
         }
@@ -217,6 +215,13 @@ export default function Chat(): JSX.Element {
                         <div ref={messagesEndRef} />
                     </div>
                 )}
+            </div>
+
+            {/* Disclaimer */}
+            <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-center">
+                <p className="text-xs text-slate-400">
+                    Aura is an AI Health Navigator, not a licensed medical professional. Always consult a qualified healthcare provider for medical advice.
+                </p>
             </div>
 
             {/* Input */}

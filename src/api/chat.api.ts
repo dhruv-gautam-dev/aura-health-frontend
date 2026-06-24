@@ -45,7 +45,7 @@ export async function sendMessageToAI(
 ): Promise<{ reply: string; session_id: string }> {
 
 
-  try { 
+  try {
     const response = await http.post(
       `/chat/run`,
       { message, session_id: sessionId, location: location },
@@ -60,7 +60,11 @@ export async function sendMessageToAI(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
-      if (status === 401) {
+      if (status === 503) {
+        toast.error("Aura's AI is experiencing high demand right now. Please wait a moment and try again.", { duration: 5000 });
+      } else if (status === 429) {
+        toast.error("Aura has reached its daily request limit. Please try again tomorrow.", { duration: 8000 });
+      } else if (status === 401) {
         toast.error('Authentication failed. Please log in again.');
       } else if (status === 422) {
         toast.error('Invalid input. Please check your message and try again.');
@@ -72,6 +76,6 @@ export async function sendMessageToAI(
     } else {
       toast.error('Unable to connect to the server. Please check your internet connection.');
     }
-    throw error; // Re-throw the error for further handling if needed
+    throw error;
   }
 }

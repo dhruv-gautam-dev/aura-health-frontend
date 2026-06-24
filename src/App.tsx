@@ -7,7 +7,7 @@ import { Toaster } from './components/ui/toaster';
 import { queryClientInstance } from './lib/query-client';
 import { Navigate } from 'react-router-dom';
 import { pagesConfig } from './pages.config';
-import NavigationTracker from './lib/NavigationTracker';
+import { Toaster as SonnerToaster } from 'sonner';
 import { Provider, useSelector } from 'react-redux';
 import store, { RootState } from './store';
 import Login from './pages/Login';
@@ -96,27 +96,27 @@ const AuthenticatedApp = () => {
 
 function App() {
   return (
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <NavigationTracker />
-          <Routes>
-              
-              {/* PUBLIC ROUTE */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/RoleSelectionPage" element={<RoleSelectionPage />} />
-              <Route path="/OnboardingPatient" element={<OnboardingPatient />} />
-              <Route path="/OnboardingDoctor" element={<OnboardingDoctor />} />
-              <Route path="/signup" element={<SignupPage />} />
+    <QueryClientProvider client={queryClientInstance}>
+      <Router>
+        <Routes>
+
+          {/* PUBLIC ROUTE */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/RoleSelectionPage" element={<RoleSelectionPage />} />
+          <Route path="/OnboardingPatient" element={<OnboardingPatient />} />
+          <Route path="/OnboardingDoctor" element={<OnboardingDoctor />} />
+          <Route path="/signup" element={<SignupPage />} />
 
 
 
-              {/* PROTECTED ROUTES */}
-              <Route path="/*" element={<AuthenticatedApp />} />
+          {/* PROTECTED ROUTES */}
+          <Route path="/*" element={<AuthenticatedApp />} />
 
-            </Routes>
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+        </Routes>
+      </Router>
+      <Toaster />
+      <SonnerToaster position="top-center" richColors />
+    </QueryClientProvider>
   );
 }
 

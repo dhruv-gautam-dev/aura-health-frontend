@@ -1,9 +1,9 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-    Home, MessageCircle, FileText, Users, Stethoscope, 
-    Activity, User, LogOut, Menu, X, Sparkles, LucideIcon
+import {
+    Home, MessageCircle, FileText, Pill,
+    Download, User, LogOut, Menu, X, Sparkles, LucideIcon
 } from 'lucide-react';
 import { createPageUrl } from './utils/index';
 import { Button } from './components/ui/button';
@@ -26,23 +26,20 @@ interface UserData {
 
 const patientNavItems: NavItem[] = [
     { name: 'Home', icon: Home, page: 'Home' },
-    { name: 'Find Doctor', icon: Users, page: 'FindDoctor' },
-    { name: 'Find Ambulance', icon: Activity, page: 'FindAmbulance' },
-    { name: 'AI Diagnosis', icon: Sparkles, page: 'ImageDiagnosis' },
+    { name: 'AI Navigator', icon: MessageCircle, page: 'Chat' },
     { name: 'Medical Records', icon: FileText, page: 'MedicalRecords' },
-    { name: 'Medications', icon: Activity, page: 'Medications' },
+    { name: 'Medications', icon: Pill, page: 'Medications' },
 ];
 
 const doctorNavItems: NavItem[] = [
     { name: 'Dashboard', icon: Home, page: 'DoctorDashboard' },
-    { name: 'Patients', icon: Users, page: 'DoctorPatients' },
     { name: 'Medical Records', icon: FileText, page: 'MedicalRecords' },
-    { name: 'Profile', icon: Stethoscope, page: 'DoctorProfile' },
+    { name: 'Profile', icon: User, page: 'DoctorProfile' },
 ];
 
 const pagesWithNav = [
-    'Home', 'FindDoctor', 'FindAmbulance', 'ImageDiagnosis', 'MedicalRecords', 'Medications', 'Reports', 'Profile',
-    'DoctorDashboard', 'DoctorPatients', 'DoctorProfile'
+    'Home', 'Chat', 'MedicalRecords', 'Medications',
+    'DoctorDashboard', 'DoctorProfile',
 ];
 
 interface LayoutProps {
@@ -51,11 +48,11 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, currentPageName }: LayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
- const user = useSelector((state: RootState) => state.auth.user);
+    const user = useSelector((state: RootState) => state.auth.user);
 
 
     const showNav = currentPageName ? pagesWithNav.includes(currentPageName) : false;
@@ -63,21 +60,21 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     const navItems = user?.role === 'doctor' ? doctorNavItems : patientNavItems;
 
     // const handleLogout = () => {
-        
+
     //     // api?.auth?.logout();
     //     authApi.logout();
     // };
 
     const handleLogout = async () => {
-  try {
-    await authApi.logout();      
-    dispatch(clearUser());       
-    await persistor.purge();     // 🔥 wipe persisted storage
-    navigate("/login");
-  } catch (error) {
-    console.error("Logout failed:", error);
-  }
-};
+        try {
+            await authApi.logout();
+            dispatch(clearUser());
+            await persistor.purge();     // 🔥 wipe persisted storage
+            navigate("/login");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
@@ -119,8 +116,8 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                                         to={createPageUrl(item.page)}
                                         className={`
                                             flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                                            ${isActive 
-                                                ? 'bg-cyan-50 text-cyan-700 font-medium' 
+                                            ${isActive
+                                                ? 'bg-cyan-50 text-cyan-700 font-medium'
                                                 : 'text-slate-600 hover:bg-slate-50'
                                             }
                                         `}

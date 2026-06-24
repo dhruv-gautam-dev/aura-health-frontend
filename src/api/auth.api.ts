@@ -18,6 +18,11 @@ export const authApi = {
         return data;
     },
 
+    /**
+     * Called after Firebase sign-in to sync with the backend.
+     * Only attempts POST /auth/login — never falls back to signup.
+     * Signup is handled explicitly by signupWithFirebase.
+     */
     authenticateUser: async (firebaseUser: any) => {
         const token = await firebaseUser.getIdToken();
 
@@ -25,38 +30,24 @@ export const authApi = {
             Authorization: `Bearer ${token}`,
         };
 
-        console.log("Authenticating user with token:", token);
-
-        let response = await http.post("/auth/login", null, {
+        const response = await http.post("/auth/login", null, {
             headers,
-            validateStatus: () => true,
         });
 
-        console.log("Login response:", response);
-
-        if (response.status === 404) {
-            console.log("User not found, attempting signup...");
-            response = await http.post("/auth/signup", null, { headers });
-            console.log("Signup response:", response);
-        }
-
-        if (response.status === 200 || response.status === 201) {
-            console.log("Authentication successful, user data:", response.data);
-            return response.data;
-        }
-
-        console.error("Authentication failed with status:", response.status);
-        throw new Error(response.data?.detail || "Authentication failed");
+        return response.data;
     },
 
     signupWithFirebase: async (
         firebaseUser: any,
         payload: {
-            name: string;  
-            role: string;  
+            name: string;
+            role: string;
         }
     ) => {
-        const token = await firebaseUser.getIdToken();
+        // Force-refresh the token so the backend always receives the very latest
+        // credential — avoids 401s caused by tokens minted milliseconds before
+        // the Firebase Admin SDK's clock_skew window.
+        const token = await firebaseUser.getIdToken(true);
 
         const { data } = await http.post(
             "/auth/signup",

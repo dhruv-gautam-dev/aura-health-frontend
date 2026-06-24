@@ -10,6 +10,7 @@ import { authApi } from "../api/auth.api";
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser, clearUser, setLoading, setError } from '../store/authSlice';
 import { RootState } from '../store';
+import store from '../store';
 
 interface AppUser {
   id: string;
@@ -44,15 +45,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // If a page (e.g. Login) already authenticated with the backend and
+      // dispatched setUser, skip the backend call to avoid a duplicate request.
+      const alreadyAuthenticated = store.getState().auth.user;
+      if (alreadyAuthenticated) {
+        setFirebaseUser(fbUser);
+        dispatch(setLoading(false));
+        return;
+      }
+
       try {
         const backendUser = await authApi.authenticateUser(fbUser);
 
         setFirebaseUser(fbUser);
         dispatch(setUser(backendUser));
-      } catch (error) {
-        console.error("Auth sync failed:", error);
-        dispatch(setError("Authentication failed"));
-        dispatch(clearUser());
+      } catch (error: any) {
+        const status = error?.response?.status;
+        if (status === 404) {
+          // Firebase account exists but the DB record hasn't been created yet.
+          // This is normal during the signup flow — Signup.tsx will call
+          // POST /auth/signup and dispatch setUser once it completes.
+          // Do NOT clear the user or show an error here.
+          setFirebaseUser(fbUser);
+        } else {
+          console.error("Auth sync failed:", error);
+          dispatch(setError("Authentication failed"));
+          dispatch(clearUser());
+        }
       } finally {
         dispatch(setLoading(false));
       }
