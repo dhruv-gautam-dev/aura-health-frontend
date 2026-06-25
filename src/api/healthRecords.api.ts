@@ -1,11 +1,7 @@
 import { http } from "./http";
-import type { LabTimelineResponse } from "../types/app.types";
+import type { LabTimelineResponse, UploadsListResponse } from "../types/app.types";
 
 export const healthRecordsApi = {
-    /**
-     * Upload a health record (prescription image or lab report PDF).
-     * Triggers Gemini OCR extraction on the backend.
-     */
     upload: async (file: File) => {
         const formData = new FormData();
         formData.append("file", file);
@@ -15,10 +11,15 @@ export const healthRecordsApi = {
         return data;
     },
 
-    /**
-     * Fetch all lab results for the authenticated user, sorted chronologically.
-     * Optionally filter by test name (e.g. "HbA1c", "TSH").
-     */
+    getUploads: async (): Promise<UploadsListResponse> => {
+        const { data } = await http.get("/health-records/uploads");
+        return data;
+    },
+
+    deleteUpload: async (uploadId: string): Promise<void> => {
+        await http.delete(`/health-records/uploads/${uploadId}`);
+    },
+
     getLabsTimeline: async (testName?: string): Promise<LabTimelineResponse> => {
         const { data } = await http.get("/health-records/labs/timeline", {
             params: testName ? { test_name: testName } : undefined,
@@ -26,9 +27,6 @@ export const healthRecordsApi = {
         return data;
     },
 
-    /**
-     * Download the user's full Digital Twin as a FHIR R4 Bundle JSON file.
-     */
     exportFhir: async (): Promise<void> => {
         const response = await http.get("/users/export/fhir", {
             responseType: "blob",

@@ -56,6 +56,39 @@ export interface LabTimelineResponse {
     results: LabResult[];
 }
 
+// A medication extracted from a health document by Gemini OCR
+export interface ExtractedMedication {
+    name: string;
+    generic_name?: string | null;
+    dosage?: string;
+    frequency?: string;
+    duration?: string | null;
+    instructions?: string | null;
+}
+
+// A single uploaded health record file with its extracted labs
+export interface UploadedRecord {
+    upload_id: string;
+    document_title: string;
+    file_name: string;
+    file_url: string | null;
+    uploaded_at: string | null;
+    lab_count: number;
+    medication_count: number;
+    diagnoses: string[];
+    medications: ExtractedMedication[];
+    doctor_name: string | null;
+    clinic_name: string | null;
+    document_date: string | null;
+    notes: string | null;
+    labs: LabResult[];
+}
+
+export interface UploadsListResponse {
+    total: number;
+    uploads: UploadedRecord[];
+}
+
 // Returned by POST /health-records/upload
 export interface HealthRecordUploadResponse {
     file_url: string;
