@@ -1,90 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Bell, Calendar, ChevronRight, Sparkles } from 'lucide-react';
+import { Plus, Bell, Calendar, ChevronRight, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import moment from 'moment';
 
-import { authApi } from '../api/auth.api';
 import { createPageUrl } from '../utils';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import QuickInput from '../components/home/QuickInput';
 import MedicationCard from '../components/home/MedicationCard';
-import HealthReportCard from '../components/home/HealthReportCard';
 import { medicationApi } from '../api/medication.api';
-import { healthReportApi } from '../api/healthReport.api';
-import { useDispatch, useSelector } from 'react-redux';
+import { healthRecordsApi } from '../api/healthRecords.api';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { checkLocationPermission } from '@/utils/checkLocationPermission';
-import { startTracking } from '@/services/locationService';
-import { setPermission } from '@/store/locationSlice';
+import type { Medication, LabResult } from '../types/app.types';
 
 interface User {
     username?: string;
     email?: string;
 }
 
-interface Medication {
-    id: string | number;
-    name: string;
-    dosage: string;
-    color?: 'coral' | 'mint' | 'blue' | 'purple' | 'pink';
-    times?: string[];
-    is_active?: boolean;
-}
-
-interface HealthReport {
-    id: string | number;
-    type: 'symptom_summary' | 'medication_adherence' | 'weekly_overview' | 'monthly_report';
-    title: string;
-    created_date: string;
-    summary?: string;
-}
-
 export default function Home() {
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.auth.user)
-    const dispatch = useDispatch();
-    const locationPermission = useSelector((state: RootState) => state.location.permission);
-    useEffect(() => {
-        const initLocation = async () => {
-            const status = await checkLocationPermission(dispatch);
-
-            if (status === "granted") {
-                startTracking(dispatch, sendLocationToServer);
-            }
-        };
-
-        initLocation();
-    }, []);
-
-    const sendLocationToServer = async (location: { latitude: number; longitude: number }) => {
-        try {
-            await fetch("/api/location", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify(location),
-            });
-        } catch (error) {
-            console.log("Location send error", error);
-        }
-    };
-
-    const handleEnableLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-        () => {
-            dispatch(setPermission("granted"));
-            startTracking(dispatch, sendLocationToServer);
-        },
-        () => {
-            dispatch(setPermission("denied"));
-        }
-    );
-};
+    const user = useSelector((state: RootState) => state.auth.user);
 
     const greeting = (() => {
         const hour = new Date().getHours();
@@ -95,37 +34,27 @@ export default function Home() {
 
     const { data: medications, isLoading: medsLoading } = useQuery<Medication[]>({
         queryKey: ['medications'],
-        queryFn: medicationApi.getActive,
+        queryFn: medicationApi.list,
         initialData: [],
     });
 
-    const { data: reports, isLoading: reportsLoading } = useQuery<HealthReport[]>({
-        queryKey: ['reports'],
-        
-        queryFn: healthReportApi.getRecent,
-        initialData: [],
+    const { data: labsData, isLoading: labsLoading } = useQuery({
+        queryKey: ['labs-timeline'],
+        queryFn: () => healthRecordsApi.getLabsTimeline(),
     });
 
-    const getNextDoseTime = (medication: Medication): Date | null => {
-        if (!medication.times?.length) return null;
-        const now = moment();
-        for (const time of medication.times.sort()) {
-            const [hours, minutes] = time.split(':');
-            const doseTime = moment().set({ hour: parseInt(hours), minute: parseInt(minutes) });
-            if (doseTime.isAfter(now)) return doseTime.toDate();
-        }
-        const [hours, minutes] = medication.times[0].split(':');
-        return moment().add(1, 'day').set({ hour: parseInt(hours), minute: parseInt(minutes) }).toDate();
+    const recentLabs = labsData?.results?.slice(0, 4) ?? [];
+
+    const flagIcon = (flag: LabResult['flag']) => {
+        if (flag === 'high') return <TrendingUp className="w-3.5 h-3.5 text-red-500" />;
+        if (flag === 'low') return <TrendingDown className="w-3.5 h-3.5 text-blue-500" />;
+        return <Minus className="w-3.5 h-3.5 text-emerald-500" />;
     };
 
-    const handleMarkTaken = async (medication: Medication) => {
-        // @ts-expect-error - api structure is dynamic
-        await api?.entities?.MedicationLog.create({
-            medication_id: medication.id,
-            scheduled_time: new Date().toISOString(),
-            taken_time: new Date().toISOString(),
-            status: 'taken',
-        });
+    const flagColor = (flag: LabResult['flag']) => {
+        if (flag === 'high') return 'text-red-600 bg-red-50 border-red-100';
+        if (flag === 'low') return 'text-blue-600 bg-blue-50 border-blue-100';
+        return 'text-emerald-600 bg-emerald-50 border-emerald-100';
     };
 
     const firstName = user?.username?.split(' ')[0] || 'there';
@@ -160,29 +89,6 @@ export default function Home() {
                         <Bell className="w-5 h-5 text-slate-600" />
                     </Button>
                 </header>
-
-                {locationPermission === "prompt" && (
-                    <div className="bg-white border rounded-2xl p-4 mb-4 shadow-sm">
-                        <h3 className="font-semibold text-slate-800">Enable Location</h3>
-                        <p className="text-sm text-slate-500">
-                            Enable location to find nearby doctors, pharmacies, and emergency services.
-                        </p>
-                        <Button
-                            onClick={handleEnableLocation}
-                            className="mt-3 bg-cyan-600 hover:bg-cyan-700"
-                        >
-                            Enable Live Location
-                        </Button>
-                    </div>
-                )}
-
-                {locationPermission === "denied" && (
-                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
-                        <p className="text-sm text-red-600">
-                            Location access denied. Please enable it from browser settings.
-                        </p>
-                    </div>
-                )}
 
                 {/* Quick Input */}
                 <motion.section
@@ -223,8 +129,8 @@ export default function Home() {
                                 <MedicationCard
                                     key={med.id}
                                     medication={med}
-                                    nextDoseTime={getNextDoseTime(med)}
-                                    onMarkTaken={handleMarkTaken}
+                                    nextDoseTime={null}
+                                    onMarkTaken={() => { }}
                                 />
                             ))}
                         </div>
@@ -235,7 +141,7 @@ export default function Home() {
                             </div>
                             <p className="text-slate-600 text-sm">No medications added yet</p>
                             <Button
-                                onClick={() => navigate(createPageUrl('AddMedication'))}
+                                onClick={() => navigate(createPageUrl('Medications'))}
                                 className="mt-3 bg-cyan-600 hover:bg-cyan-700"
                             >
                                 <Plus className="w-4 h-4 mr-2" /> Add Medication
@@ -244,7 +150,7 @@ export default function Home() {
                     )}
                 </motion.section>
 
-                {/* Recent Health Reports */}
+                {/* Recent Lab Results */}
                 <motion.section
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -252,29 +158,44 @@ export default function Home() {
                     className="mt-8"
                 >
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-semibold text-slate-800">Recent Health Reports</h2>
+                        <h2 className="text-lg font-semibold text-slate-800">Recent Lab Results</h2>
                         <button
-                            onClick={() => navigate(createPageUrl('Reports'))}
+                            onClick={() => navigate(createPageUrl('MedicalRecords'))}
                             className="text-sm text-cyan-600 font-medium flex items-center gap-1 hover:text-cyan-700"
                         >
                             View All <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
 
-                    {reportsLoading ? (
+                    {labsLoading ? (
                         <div className="space-y-3">
-                            {[1, 2].map(i => (
-                                <Skeleton key={i} className="h-24 rounded-2xl" />
+                            {[1, 2, 3].map(i => (
+                                <Skeleton key={i} className="h-16 rounded-2xl" />
                             ))}
                         </div>
-                    ) : reports && reports.length > 0 ? (
-                        <div className="space-y-3">
-                            {reports.slice(0, 3).map((report) => (
-                                <HealthReportCard
-                                    key={report.id}
-                                    report={report}
-                                    onClick={() => navigate(createPageUrl('Reports') + `?id=${report.id}`)}
-                                />
+                    ) : recentLabs.length > 0 ? (
+                        <div className="space-y-2">
+                            {recentLabs.map((lab) => (
+                                <div
+                                    key={lab.id}
+                                    className="bg-white rounded-2xl border border-slate-100 px-4 py-3 flex items-center justify-between"
+                                >
+                                    <div>
+                                        <p className="text-sm font-medium text-slate-800">{lab.test_name}</p>
+                                        <p className="text-xs text-slate-400 mt-0.5">
+                                            {lab.date ? moment(lab.date).format('DD MMM YYYY') : 'Date unknown'}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-semibold text-slate-700">
+                                            {lab.value}{lab.unit ? ` ${lab.unit}` : ''}
+                                        </span>
+                                        <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full border font-medium ${flagColor(lab.flag)}`}>
+                                            {flagIcon(lab.flag)}
+                                            {lab.flag ?? 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     ) : (
@@ -282,8 +203,14 @@ export default function Home() {
                             <div className="w-12 h-12 rounded-full bg-violet-50 flex items-center justify-center mx-auto mb-3">
                                 <Sparkles className="w-6 h-6 text-violet-600" />
                             </div>
-                            <p className="text-slate-600 text-sm">No reports generated yet</p>
-                            <p className="text-slate-400 text-xs mt-1">Start chatting to generate insights</p>
+                            <p className="text-slate-600 text-sm">No lab results yet</p>
+                            <p className="text-slate-400 text-xs mt-1">Upload a lab report to get started</p>
+                            <Button
+                                onClick={() => navigate(createPageUrl('MedicalRecords'))}
+                                className="mt-3 bg-violet-600 hover:bg-violet-700"
+                            >
+                                Upload Report
+                            </Button>
                         </div>
                     )}
                 </motion.section>
