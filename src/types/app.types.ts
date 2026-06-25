@@ -5,6 +5,7 @@ export interface Medication {
     medication_name: string;
     dosage: string;
     frequency: string;
+    reminder_time: string | null;  // "HH:MM" 24-hour
     start_date: string;       // ISO date "YYYY-MM-DD"
     end_date: string | null;
     notes: string | null;
@@ -23,6 +24,7 @@ export interface MedicationCreatePayload {
     medication_name: string;
     dosage: string;
     frequency: string;
+    reminder_time?: string | null;  // "HH:MM" 24-hour
     start_date: string;
     end_date?: string | null;
     notes?: string | null;

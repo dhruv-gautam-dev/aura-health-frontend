@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -15,6 +15,28 @@ import RoleSelectionPage from './pages/RoleSelectionPage';
 import OnboardingPatient from './pages/OnboardingPatient';
 import { OnboardingDoctor } from './pages/OnboardingDoctor';
 import SignupPage from './pages/Signup';
+// --------------------
+// Calendar OAuth callback handler
+// Runs on every page load. If this window was opened as a popup by the
+// Medications page and Google redirected here with ?calendar_connected=true,
+// post a message back to the opener and close the popup.
+// --------------------
+function CalendarCallbackHandler() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('calendar_connected') === 'true') {
+      // Write to localStorage — this fires a 'storage' event in every other
+      // same-origin tab (including the Medications page that opened this popup).
+      // We can't rely on window.opener.postMessage because browsers null out
+      // window.opener after a cross-origin redirect chain (Google OAuth flow).
+      localStorage.setItem('aura_calendar_connected', Date.now().toString());
+      // Close the popup. This works because it was opened via window.open().
+      window.close();
+    }
+  }, []);
+  return null;
+}
+
 // --------------------
 // Pages config typing (minimal & safe)
 // --------------------
@@ -98,6 +120,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
       <Router>
+        <CalendarCallbackHandler />
         <Routes>
 
           {/* PUBLIC ROUTE */}

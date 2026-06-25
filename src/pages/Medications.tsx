@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pill, Trash2, AlertTriangle, X, Calendar } from 'lucide-react';
+import { Plus, Pill, Trash2, AlertTriangle, X, Calendar, Clock, CheckCircle2, Link2, Unlink } from 'lucide-react';
 import moment from 'moment';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { medicationApi } from '../api/medication.api';
+import { calendarApi } from '../api/calendar.api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -21,6 +22,53 @@ export default function Medications() {
     const [interactionWarning, setInteractionWarning] = useState<string | null>(null);
 
     const { register, handleSubmit, reset, formState: { errors } } = useForm<MedicationCreatePayload>();
+
+    // Listen for the localStorage signal set by CalendarCallbackHandler in the popup.
+    // The 'storage' event fires in all same-origin tabs EXCEPT the one that wrote the key,
+    // so this fires here (Medications tab) when the popup writes 'aura_calendar_connected'.
+    useEffect(() => {
+        const handler = (e: StorageEvent) => {
+            if (e.key === 'aura_calendar_connected') {
+                toast.success('Google Calendar connected successfully!');
+                queryClient.invalidateQueries({ queryKey: ['calendarStatus'] });
+                localStorage.removeItem('aura_calendar_connected');
+            }
+        };
+        window.addEventListener('storage', handler);
+        return () => window.removeEventListener('storage', handler);
+    }, [queryClient]);
+
+    const { data: calendarStatus, isLoading: calendarLoading } = useQuery({
+        queryKey: ['calendarStatus'],
+        queryFn: calendarApi.getStatus,
+    });
+
+    const connectCalendarMutation = useMutation({
+        mutationFn: calendarApi.getAuthUrl,
+        onSuccess: ({ auth_url }) => {
+            // Open as a popup so the OAuth flow stays contained.
+            // CalendarCallbackHandler in App.tsx will postMessage back and close it.
+            window.open(
+                auth_url,
+                'google_calendar_auth',
+                'width=520,height=650,scrollbars=yes,resizable=yes'
+            );
+        },
+        onError: () => {
+            toast.error('Could not start Google Calendar connection. Please try again.');
+        },
+    });
+
+    const revokeCalendarMutation = useMutation({
+        mutationFn: calendarApi.revoke,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['calendarStatus'] });
+            toast.success('Google Calendar disconnected.');
+        },
+        onError: () => {
+            toast.error('Failed to disconnect Google Calendar.');
+        },
+    });
 
     const { data: medications, isLoading } = useQuery<Medication[]>({
         queryKey: ['medications'],
@@ -78,6 +126,58 @@ export default function Medications() {
                         <Plus className="w-4 h-4 mr-2" /> Add Medication
                     </Button>
                 </div>
+
+                {/* Google Calendar Connection Banner */}
+                {!calendarLoading && (
+                    <div className={`mb-6 rounded-2xl border p-4 flex items-center justify-between gap-4 ${calendarStatus?.connected
+                            ? 'bg-emerald-50 border-emerald-200'
+                            : 'bg-slate-50 border-slate-200'
+                        }`}>
+                        <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${calendarStatus?.connected ? 'bg-emerald-100' : 'bg-white border border-slate-200'
+                                }`}>
+                                {calendarStatus?.connected
+                                    ? <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                    : <Calendar className="w-5 h-5 text-slate-500" />}
+                            </div>
+                            <div>
+                                <p className={`text-sm font-semibold ${calendarStatus?.connected ? 'text-emerald-800' : 'text-slate-700'
+                                    }`}>
+                                    {calendarStatus?.connected
+                                        ? 'Google Calendar Connected'
+                                        : 'Connect Google Calendar'}
+                                </p>
+                                <p className={`text-xs mt-0.5 ${calendarStatus?.connected ? 'text-emerald-600' : 'text-slate-400'
+                                    }`}>
+                                    {calendarStatus?.connected
+                                        ? `Reminders sync to ${calendarStatus.google_email}`
+                                        : 'Let Aura create medication reminders in your calendar'}
+                                </p>
+                            </div>
+                        </div>
+                        {calendarStatus?.connected ? (
+                            <button
+                                onClick={() => revokeCalendarMutation.mutate()}
+                                disabled={revokeCalendarMutation.isPending}
+                                className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
+                            >
+                                <Unlink className="w-3.5 h-3.5" />
+                                Disconnect
+                            </button>
+                        ) : (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => connectCalendarMutation.mutate()}
+                                disabled={connectCalendarMutation.isPending}
+                                className="flex items-center gap-1.5 text-xs border-slate-300"
+                            >
+                                <Link2 className="w-3.5 h-3.5" />
+                                {connectCalendarMutation.isPending ? 'Opening…' : 'Connect'}
+                            </Button>
+                        )}
+                    </div>
+                )}
 
                 {/* Drug Interaction Warning */}
                 <AnimatePresence>
@@ -180,6 +280,16 @@ export default function Medications() {
                                         />
                                     </div>
                                     <div>
+                                        <Label htmlFor="reminder_time">Reminder Time</Label>
+                                        <Input
+                                            id="reminder_time"
+                                            type="time"
+                                            {...register('reminder_time')}
+                                            className="mt-1"
+                                        />
+                                        <p className="text-xs text-slate-400 mt-1">Used to schedule calendar reminders</p>
+                                    </div>
+                                    <div>
                                         <Label htmlFor="notes">Notes</Label>
                                         <Input
                                             id="notes"
@@ -257,6 +367,14 @@ export default function Medications() {
                                                     {isActive ? 'Active' : 'Completed'}
                                                 </span>
                                             </div>
+                                            {med.reminder_time && (
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    <Clock className="w-3.5 h-3.5 text-cyan-500" />
+                                                    <span className="text-xs text-cyan-600 font-medium">
+                                                        Reminder at {moment(med.reminder_time, 'HH:mm').format('h:mm A')}
+                                                    </span>
+                                                </div>
+                                            )}
                                             {med.notes && (
                                                 <p className="text-xs text-slate-400 mt-1">{med.notes}</p>
                                             )}
