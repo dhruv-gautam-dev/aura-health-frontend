@@ -1,9 +1,9 @@
-import React, { useState, useEffect, ReactNode } from 'react';
+import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Home, MessageCircle, FileText, Pill,
-    Download, User, LogOut, Menu, X, Sparkles, Settings, LucideIcon
+    Download, User, LogOut, Menu, X, Sparkles, Settings, ChevronUp, LucideIcon
 } from 'lucide-react';
 import { createPageUrl } from './utils/index';
 import { Button } from './components/ui/button';
@@ -29,7 +29,6 @@ const patientNavItems: NavItem[] = [
     { name: 'AI Navigator', icon: MessageCircle, page: 'Chat' },
     { name: 'Medical Records', icon: FileText, page: 'MedicalRecords' },
     { name: 'Medications', icon: Pill, page: 'Medications' },
-    { name: 'Settings', icon: Settings, page: 'Settings' },
 ];
 
 const doctorNavItems: NavItem[] = [
@@ -50,7 +49,21 @@ interface LayoutProps {
 
 export default function Layout({ children, currentPageName }: LayoutProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setProfileOpen(false);
+            }
+        }
+        if (profileOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [profileOpen]);
     const navigate = useNavigate();
 
     const user = useSelector((state: RootState) => state.auth.user);
@@ -130,32 +143,46 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                             })}
                         </nav>
 
-                        {/* User Profile */}
-                        <div className="p-4 border-t border-slate-100">
+                        {/* User Profile with popup */}
+                        <div className="p-4 border-t border-slate-100 relative" ref={profileRef}>
+                            {/* Popup card */}
+                            {profileOpen && (
+                                <div className="absolute bottom-full left-4 right-4 mb-2 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-10">
+                                    <div className="px-4 py-3 border-b border-slate-100">
+                                        <p className="text-sm font-semibold text-slate-800">{user?.username || 'User'}</p>
+                                    </div>
+                                    <div className="py-1">
+                                        <button
+                                            onClick={() => { navigate(createPageUrl('Settings')); setProfileOpen(false); }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <Settings className="w-4 h-4 text-slate-400" />
+                                            Settings
+                                        </button>
+                                        <button
+                                            onClick={() => { handleLogout(); setProfileOpen(false); }}
+                                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            {/* Trigger */}
                             <button
-                                onClick={() => navigate(createPageUrl('Settings'))}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 hover:bg-cyan-50 transition-colors text-left"
+                                onClick={() => setProfileOpen(!profileOpen)}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
                             >
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600
                                                 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                                    {user?.username?.[0] || 'U'}
+                                    {user?.username?.[0]?.toUpperCase() || 'U'}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-slate-800 truncate">
-                                        {user?.username || 'User'}
-                                    </p>
-                                    <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                                </div>
-                                <Settings className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                                <p className="flex-1 text-sm font-medium text-slate-800 truncate">
+                                    {user?.username || 'User'}
+                                </p>
+                                <ChevronUp className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200 ${profileOpen ? '' : 'rotate-180'}`} />
                             </button>
-                            <Button
-                                variant="ghost"
-                                onClick={handleLogout}
-                                className="w-full mt-2 justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Sign Out
-                            </Button>
                         </div>
                     </div>
                 </aside>
@@ -205,6 +232,23 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                                     );
                                 })}
                             </nav>
+                            <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
+                                <Link
+                                    to={createPageUrl('Settings')}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-50"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                    <span>Settings</span>
+                                </Link>
+                                <button
+                                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                                    className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50"
+                                >
+                                    <LogOut className="w-5 h-5" />
+                                    <span>Sign Out</span>
+                                </button>
+                            </div>
                         </motion.div>
                     )}
                 </header>
