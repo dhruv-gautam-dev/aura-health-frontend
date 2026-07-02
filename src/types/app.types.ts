@@ -110,3 +110,37 @@ export interface HealthRecordUploadResponse {
     };
     message: string;
 }
+
+// Returned by GET /users/me
+export interface UserSettings {
+    id: number;
+    email: string;
+    username: string | null;
+    role: string;
+    phone: string | null;
+    date_of_birth: string | null;
+    timezone: string | null;
+    blood_type: string | null;
+    allergies: string[];
+    chronic_conditions: string[];
+    past_surgeries: string[];
+    family_history: string | null;
+    emergency_contact_name: string | null;
+    emergency_contact_relationship: string | null;
+    emergency_contact_phone: string | null;
+}
+
+export interface UserSettingsUpdatePayload {
+    username?: string;
+    phone?: string;
+    date_of_birth?: string;
+    timezone?: string;
+    blood_type?: string;
+    allergies?: string[];
+    chronic_conditions?: string[];
+    past_surgeries?: string[];
+    family_history?: string;
+    emergency_contact_name?: string;
+    emergency_contact_relationship?: string;
+    emergency_contact_phone?: string;
+}

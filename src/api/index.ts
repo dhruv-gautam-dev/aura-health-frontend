@@ -7,3 +7,4 @@ export * from "./upload.api";
 export * from "./medication.api";
 export * from "./healthRecords.api";
 export * from "./calendar.api";
+export * from "./settings.api";

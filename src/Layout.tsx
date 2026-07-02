@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Home, MessageCircle, FileText, Pill,
-    Download, User, LogOut, Menu, X, Sparkles, LucideIcon
+    Download, User, LogOut, Menu, X, Sparkles, Settings, LucideIcon
 } from 'lucide-react';
 import { createPageUrl } from './utils/index';
 import { Button } from './components/ui/button';
@@ -29,6 +29,7 @@ const patientNavItems: NavItem[] = [
     { name: 'AI Navigator', icon: MessageCircle, page: 'Chat' },
     { name: 'Medical Records', icon: FileText, page: 'MedicalRecords' },
     { name: 'Medications', icon: Pill, page: 'Medications' },
+    { name: 'Settings', icon: Settings, page: 'Settings' },
 ];
 
 const doctorNavItems: NavItem[] = [
@@ -38,7 +39,7 @@ const doctorNavItems: NavItem[] = [
 ];
 
 const pagesWithNav = [
-    'Home', 'Chat', 'MedicalRecords', 'Medications',
+    'Home', 'Chat', 'MedicalRecords', 'Medications', 'Settings',
     'DoctorDashboard', 'DoctorProfile',
 ];
 
@@ -131,9 +132,12 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
 
                         {/* User Profile */}
                         <div className="p-4 border-t border-slate-100">
-                            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50">
+                            <button
+                                onClick={() => navigate(createPageUrl('Settings'))}
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 hover:bg-cyan-50 transition-colors text-left"
+                            >
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-teal-600 
-                                                flex items-center justify-center text-white font-semibold">
+                                                flex items-center justify-center text-white font-semibold flex-shrink-0">
                                     {user?.username?.[0] || 'U'}
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -142,7 +146,8 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                                     </p>
                                     <p className="text-xs text-slate-500 truncate">{user?.email}</p>
                                 </div>
-                            </div>
+                                <Settings className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                            </button>
                             <Button
                                 variant="ghost"
                                 onClick={handleLogout}

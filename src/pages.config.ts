@@ -9,6 +9,7 @@ import { OnboardingDoctor } from './pages/OnboardingDoctor';
 import Chat from './pages/Chat';
 import Medications from './pages/Medications';
 import MedicalRecords from './pages/MedicalRecords';
+import Settings from './pages/Settings';
 
 
 export const PAGES: Record<string, React.ComponentType> = {
@@ -16,6 +17,7 @@ export const PAGES: Record<string, React.ComponentType> = {
   "Chat": Chat,
   "Medications": Medications,
   "MedicalRecords": MedicalRecords,
+  "Settings": Settings,
   "RoleSelectionPage": RoleSelectionPage,
   "OnboardingPatient": OnboardingPatient,
   "LandingPage": LandingPage,

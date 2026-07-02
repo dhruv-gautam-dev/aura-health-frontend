@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Bell, Calendar, ChevronRight, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Plus, Settings, Calendar, ChevronRight, Sparkles, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import moment from 'moment';
 
 import { createPageUrl } from '../utils';
@@ -84,9 +84,11 @@ export default function Home() {
                     <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => navigate(createPageUrl('Settings'))}
                         className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm"
+                        title="Settings"
                     >
-                        <Bell className="w-5 h-5 text-slate-600" />
+                        <Settings className="w-5 h-5 text-slate-600" />
                     </Button>
                 </header>
 
