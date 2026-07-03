@@ -67,6 +67,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
     const navigate = useNavigate();
 
     const user = useSelector((state: RootState) => state.auth.user);
+    const isGuest = useSelector((state: RootState) => state.auth.isGuest);
 
 
     const showNav = currentPageName ? pagesWithNav.includes(currentPageName) : false;
@@ -100,9 +101,29 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
                 }
             `}</style>
 
+            {/* Guest Mode Banner */}
+            {isGuest && (
+                <div className="fixed top-0 left-0 right-0 z-[100] bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center justify-center gap-4 text-sm text-amber-800">
+                    <span>You're browsing as a guest — data won't be saved.</span>
+                    <button
+                        onClick={() => { dispatch(clearUser()); navigate('/RoleSelectionPage'); }}
+                        className="font-semibold underline underline-offset-2 hover:text-amber-900"
+                    >
+                        Sign Up Free
+                    </button>
+                    <span className="text-amber-400">·</span>
+                    <button
+                        onClick={() => { dispatch(clearUser()); navigate('/login'); }}
+                        className="font-semibold underline underline-offset-2 hover:text-amber-900"
+                    >
+                        Sign In
+                    </button>
+                </div>
+            )}
+
             {/* Desktop Sidebar */}
             {showNav && (
-                <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col z-50">
+                <aside className={`hidden lg:fixed lg:flex lg:w-64 lg:flex-col z-50 bottom-0 ${isGuest ? 'top-10' : 'top-0'}`}>
                     <div className="flex flex-col flex-grow bg-white border-r border-slate-200 overflow-y-auto">
                         {/* Logo */}
                         <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-100">
@@ -190,7 +211,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
 
             {/* Mobile Header */}
             {showNav && (
-                <header className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200">
+                <header className={`lg:hidden sticky ${isGuest ? 'top-10' : 'top-0'} z-40 bg-white border-b border-slate-200`}>
                     <div className="flex items-center justify-between px-4 py-3">
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 
@@ -255,7 +276,7 @@ export default function Layout({ children, currentPageName }: LayoutProps) {
             )}
 
             {/* Main Content */}
-            <main className={showNav ? 'lg:pl-64' : ''}>
+            <main className={`${showNav ? 'lg:pl-64' : ''} ${isGuest ? 'pt-10' : ''}`}>
                 {children}
             </main>
         </div>

@@ -32,7 +32,7 @@ interface PagesConfig {
 }
 
 export const pagesConfig: PagesConfig = {
-  mainPage: "LandingPage",
+  mainPage: "Home",
   Pages: PAGES,
   Layout: __Layout,
 };

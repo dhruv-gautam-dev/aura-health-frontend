@@ -1,18 +1,16 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setGuestUser } from "../store/authSlice";
 import {
   Activity,
   Brain,
-  Calendar,
   CheckCircle2,
   ChevronRight,
-  Globe,
   Heart,
-  MessageSquare,
   ShieldCheck,
   Stethoscope,
   User,
-  Zap
 } from "lucide-react";
 import { Button } from "../../src/components/ui/landing/btn"
 import { Input } from "../../src/components/ui/input";
@@ -34,6 +32,13 @@ const staggerContainer = {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleGuestLogin = () => {
+    dispatch(setGuestUser());
+    navigate('/Home');
+  };
+
   return (
     <div className="min-h-screen bg-background font-sans overflow-x-hidden">
       {/* Navigation */}
@@ -52,16 +57,12 @@ export default function LandingPage() {
           </div>
 
           <div className="hidden md:flex items-center gap-8">
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Patients</a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Doctors</a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">AI Features</a>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Enterprise</a>
           </div>
 
           <div className="flex items-center gap-5">
             <button
               onClick={() => navigate("/login")}
-             className="hidden sm:block text-sm font-medium text-gray-800 hover:text-gray-900">
+              className="hidden sm:block text-sm font-medium text-gray-800 hover:text-gray-900">
               Sign In
             </button>
             <button
@@ -97,11 +98,6 @@ transition-all
             variants={staggerContainer}
             className="max-w-2xl"
           >
-            <motion.div variants={fadeIn} className="inline-flex items-center gap-2 bg-purple-50 border border-purple-100 text-purple-600 px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-              <Zap className="h-4 w-4 fill-current" />
-              <span>Now powered by Aura AI 2.0</span>
-            </motion.div>
-
             <motion.h1 variants={fadeIn} className="text-5xl md:text-7xl font-display font-bold leading-[1.1] mb-6 text-slate-900">
               Healthcare <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#13B7A2] via-[#6B8DFF] to-[#8B5CF6]">Reimagined</span>
@@ -112,25 +108,28 @@ transition-all
             </motion.p>
 
             <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="h-14 px-8 text-lg rounded-full bg-[#13B7A2] hover:bg-[#0FAF9A] shadow-xl shadow-[#13B7A2]/30">
-                Find a Doctor
+              <Button size="lg" onClick={() => navigate("/RoleSelectionPage")} className="h-14 px-8 text-lg rounded-full bg-[#13B7A2] hover:bg-[#0FAF9A] shadow-xl shadow-[#13B7A2]/30">
+                Get Started
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full border-2 hover:bg-secondary/20 hover:border-secondary hover:text-secondary-foreground">
+              <Button size="lg" variant="outline" onClick={() => navigate("/login")} className="h-14 px-8 text-lg rounded-full border-2 hover:bg-secondary/20 hover:border-secondary hover:text-secondary-foreground">
                 <Brain className="mr-2 h-5 w-5" />
-                Try Aura AI
+                Sign In
               </Button>
             </motion.div>
 
-            <motion.div variants={fadeIn} className="mt-12 flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex -space-x-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-background bg-muted overflow-hidden">
-                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <p>Trusted by <span className="font-semibold text-foreground">10,000+</span> patients today</p>
+            <motion.div variants={fadeIn} className="mt-4">
+              <button
+                onClick={handleGuestLogin}
+                className="group inline-flex items-center gap-2 px-6 py-3 rounded-full border border-dashed border-slate-300 text-sm text-slate-600 hover:border-[#13B7A2] hover:text-[#13B7A2] hover:bg-[#13B7A2]/5 transition-all duration-200"
+              >
+                <span className="text-base">👀</span>
+                Want to take a tour first?
+                <span className="font-semibold">Browse as guest</span>
+                <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
             </motion.div>
+
+
           </motion.div>
 
           <motion.div
@@ -200,8 +199,8 @@ transition-all
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard
               icon={<Stethoscope className="h-8 w-8 text-primary" />}
-              title="Expert Doctors"
-              description="Browse thousands of verified specialists. Filter by rating, location, and specialty."
+              title="Find Doctors"
+              description="Browse and connect with medical professionals. Filter by specialty and availability."
             />
             <FeatureCard
               icon={<Brain className="h-8 w-8 text-purple-600" />}
@@ -349,20 +348,14 @@ transition-all
 
             <div className="relative z-10 max-w-3xl mx-auto text-white">
               <h2 className="text-4xl md:text-6xl font-display font-bold mb-6">Ready to take control?</h2>
-              <p className="text-xl md:text-2xl opacity-90 mb-10 font-light">Join thousands of patients who have found their perfect healthcare match with Aura.</p>
+              <p className="text-xl md:text-2xl opacity-90 mb-10 font-light">Your personal health dashboard — AI chat, medical records, medications, and more.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
+                  onClick={() => navigate("/RoleSelectionPage")}
                   className="h-14 px-12 text-lg rounded-full font-semibold bg-white text-teal-600 hover:bg-white/90 shadow-md">
-                  Get Started Free
+                  Get Started
                 </Button>
-
-                <Button
-                  size="lg"
-                  className="h-14 px-12 text-lg rounded-full border border-white/40 bg-transparent text-white hover:bg-white/10">
-                  Contact Sales
-                </Button>
-
               </div>
             </div>
           </div>
@@ -372,55 +365,22 @@ transition-all
       {/* Footer */}
       <footer className="bg-muted/30 pt-20 pb-10 border-t">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
-            <div className="col-span-1 md:col-span-1">
-              <div className="flex items-center gap-2 mb-6">
+          <div className="mb-16">
+            <div className="col-span-1 md:col-span-4">
+              <div className="flex items-center gap-2 mb-4">
                 <div className="bg-primary p-2 rounded-lg">
                   <Activity className="h-8 w-8 text-white bg-[#13B7A2] rounded-md p-1" />
                 </div>
                 <span className="font-display text-xl font-bold">AuraH</span>
               </div>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Making healthcare accessible, intelligent, and human-centric for everyone, everywhere.
+              <p className="text-muted-foreground text-sm leading-relaxed max-w-sm">
+                A personal health platform with AI-powered chat, medical records, medication tracking, and doctor connections.
               </p>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6">Platform</h4>
-              <ul className="space-y-4 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Find Doctors</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">AI Diagnostics</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Telemedicine</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Records</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6">Company</h4>
-              <ul className="space-y-4 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold mb-6">Legal</h4>
-              <ul className="space-y-4 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Cookie Policy</a></li>
-              </ul>
             </div>
           </div>
 
           <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-            <p>&copy; 2026 Aura Health Inc. All rights reserved.</p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              <Globe className="h-5 w-5 hover:text-foreground cursor-pointer" />
-              <MessageSquare className="h-5 w-5 hover:text-foreground cursor-pointer" />
-            </div>
+            <p>&copy; 2026 Aura Health. All rights reserved.</p>
           </div>
         </div>
       </footer>
