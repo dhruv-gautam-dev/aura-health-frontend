@@ -39,6 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       dispatch(setLoading(true));
 
       if (!fbUser) {
+        // Don't evict guest sessions — they have no Firebase user by design.
+        const currentState = store.getState().auth;
+        if (currentState.isGuest) {
+          dispatch(setLoading(false));
+          return;
+        }
         setFirebaseUser(null);
         dispatch(clearUser());
         dispatch(setLoading(false));

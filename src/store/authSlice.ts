@@ -10,6 +10,7 @@ interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   loading: boolean;
   error: string | null;
 }
@@ -17,6 +18,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
+  isGuest: false,
   loading: false,
   error: null,
 };
@@ -28,6 +30,7 @@ const authSlice = createSlice({
     setUser(state, action: PayloadAction<User>) {
       state.user = action.payload;
       state.isAuthenticated = true;
+      state.isGuest = false;
       state.loading = false;
       state.error = null;
       console.group('Redux Auth State Updated');
@@ -35,9 +38,17 @@ const authSlice = createSlice({
       console.log('New State:', state);
       console.groupEnd();
     },
+    setGuestUser(state) {
+      state.user = { id: 'guest', email: 'guest@demo.com', username: 'Guest', role: 'patient' };
+      state.isAuthenticated = true;
+      state.isGuest = true;
+      state.loading = false;
+      state.error = null;
+    },
     clearUser(state) {
       state.user = null;
       state.isAuthenticated = false;
+      state.isGuest = false;
       state.loading = false;
       state.error = null;
       console.group('Redux Auth State Cleared');
@@ -53,5 +64,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, setLoading, setError } = authSlice.actions;
+export const { setUser, setGuestUser, clearUser, setLoading, setError } = authSlice.actions;
 export default authSlice.reducer;

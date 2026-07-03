@@ -11,6 +11,7 @@ import { Toaster as SonnerToaster } from 'sonner';
 import { Provider, useSelector } from 'react-redux';
 import store, { RootState } from './store';
 import Login from './pages/Login';
+import LandingPage from './pages/LandingPage';
 import RoleSelectionPage from './pages/RoleSelectionPage';
 import OnboardingPatient from './pages/OnboardingPatient';
 import { OnboardingDoctor } from './pages/OnboardingDoctor';
@@ -70,6 +71,17 @@ const LayoutWrapper = ({ children, currentPageName }: LayoutWrapperProps) => {
 };
 
 // --------------------
+// Landing route — public, but redirects authenticated users to Home
+// --------------------
+const LandingRoute = () => {
+  const user = useSelector((state: RootState) => state.auth.user);
+  const loading = useSelector((state: RootState) => state.auth.loading);
+  if (loading) return null;
+  if (user) return <Navigate to="/Home" replace />;
+  return <LandingPage />;
+};
+
+// --------------------
 // Authenticated App
 // --------------------
 const AuthenticatedApp = () => {
@@ -123,7 +135,8 @@ function App() {
         <CalendarCallbackHandler />
         <Routes>
 
-          {/* PUBLIC ROUTE */}
+          {/* PUBLIC ROUTES */}
+          <Route path="/" element={<LandingRoute />} />
           <Route path="/login" element={<Login />} />
           <Route path="/RoleSelectionPage" element={<RoleSelectionPage />} />
           <Route path="/OnboardingPatient" element={<OnboardingPatient />} />

@@ -115,8 +115,10 @@ export default function Chat(): JSX.Element {
         }
     };
 
+    const isGuest = useSelector((state: RootState) => state.auth.isGuest);
+
     return (
-        <div className="h-screen flex flex-col bg-white">
+        <div className={`${isGuest ? 'h-[calc(100vh-2.5rem)]' : 'h-screen'} flex flex-col bg-white`}>
             {/* Header */}
             <header className="bg-white border-b border-slate-100 px-6 py-4">
                 <div className="flex items-center justify-between">

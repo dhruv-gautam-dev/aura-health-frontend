@@ -37,7 +37,7 @@ const loginSchema = z.object({
 export default function Login() {
   const navigate = useNavigate();
   const { toast } = useToast();
-const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -90,10 +90,10 @@ const dispatch = useDispatch();
   return (
     <div className="min-h-screen flex items-center justify-center overflow-hidden">
       <div className="flex w-full h-screen overflow-hidden">
-        
+
         {/* LEFT SIDE */}
         <div className="hidden lg:flex flex-col w-1/2 relative bg-[#13B7A2] p-16 justify-between text-white overflow-hidden">
-          
+
           <div className="absolute inset-0 z-0">
             <img
               src="/images/login-hero.png"
@@ -112,9 +112,9 @@ const dispatch = useDispatch();
               to="/"
               className="flex items-center gap-2 mb-12 hover:opacity-80 transition-opacity"
             >
-               <Button className="rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 gap-2 shadow-2xl h-12 px-6">
-            <ArrowLeft className="h-5 w-5" /> Back to Aura
-          </Button>
+              <Button className="rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 gap-2 shadow-2xl h-12 px-6">
+                <ArrowLeft className="h-5 w-5" /> Back to Aura
+              </Button>
             </Link>
 
             <h1 className="text-6xl font-bold mb-8 leading-tight">
@@ -124,17 +124,17 @@ const dispatch = useDispatch();
             </h1>
 
             <div className="space-y-6 max-w-md">
-              
+
               <div className="flex items-start gap-4 bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-2xl">
                 <div className="h-12 w-12 rounded-2xl bg-teal-400/20 flex items-center justify-center shrink-0">
                   <Stethoscope className="h-6 w-6 text-teal-200" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">
-                    Top-tier Specialists
+                    Find Specialists
                   </h3>
                   <p className="text-sm opacity-80">
-                    Access over 5,000+ verified medical experts globally.
+                    Browse and connect with medical professionals.
                   </p>
                 </div>
               </div>
@@ -156,8 +156,6 @@ const dispatch = useDispatch();
 
           <div className="relative z-10 text-sm opacity-70 flex items-center gap-6">
             <span>&copy; 2026 Aura Health</span>
-            <span className="h-1 w-1 bg-white rounded-full" />
-            <span>Trusted by 10k+ patients</span>
           </div>
         </div>
 
@@ -169,7 +167,7 @@ const dispatch = useDispatch();
             className="w-full max-w-md"
           >
             <div className="mb-12">
-              
+
               <div className="lg:hidden flex items-center gap-2 mb-8">
                 <Activity className="h-8 w-8 text-[#13B7A2]" />
                 <span className="text-2xl font-bold text-[#13B7A2]">
